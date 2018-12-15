@@ -1,7 +1,7 @@
 import { bindAll } from 'lodash';
 
 
-import { EventContext, defaultFont, transpose, indent, compareNumber } from '../Utils';
+import { EventContext, defaultTextStyle, transpose, indent, compareNumber } from '../Utils';
 import { CardButton } from '../UI/CardButton';
 
 import { config } from '../config';
@@ -10,6 +10,8 @@ import { Waypoint } from '../Waypoint';
 import { Boy } from '../Boy';
 
 type Pointer = Phaser.Input.Pointer;
+type Scene = Phaser.Scene;
+const Vector2 = Phaser.Math.Vector2;
 
 interface IMoveKeys {
     down: Phaser.Input.Keyboard.Key,
@@ -24,6 +26,7 @@ export class MainScene extends Phaser.Scene implements GM {
     private moveKeys: IMoveKeys;
     private g_tilesContainer: Phaser.GameObjects.Container;
     private g_group2: Phaser.GameObjects.Container;
+    public currentTool: Tool = null;
 
     private g_bg: Phaser.GameObjects.Image;
     private g_tilesGroup: Phaser.GameObjects.Group;
@@ -37,6 +40,9 @@ export class MainScene extends Phaser.Scene implements GM {
         super({
             key: "MainScene"
         });
+
+        // this.currentTool = new WaypointTool();
+        this.currentTool = new BoyDebugTool();
     }
 
     preload(): void {
@@ -110,29 +116,13 @@ export class MainScene extends Phaser.Scene implements GM {
     private registerMouse(): void {
         let activeWaypoint: Waypoint = null;
         this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
-            const cellPos = this.getCellPosition(pointer.x, pointer.y);
-            if (!activeWaypoint) {
-                if (this.g_waypointMatrix[cellPos.x][cellPos.y] != null) {
-                    activeWaypoint = this.g_waypointMatrix[cellPos.x][cellPos.y];
-                    this.g_waypointMatrix[cellPos.x][cellPos.y] = null;
-                } else {
-                    activeWaypoint = this.add.existing(new Waypoint(this, this.g_waypointList.length, cellPos.x, cellPos.y)) as Waypoint;
-                }
-            }
+            this.currentTool.pointerdown(this, pointer);
         });
         this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
-            if (activeWaypoint) {
-                const cellPos = this.getCellPosition(pointer.x, pointer.y);
-                activeWaypoint.setCellPosition(cellPos.x, cellPos.y);
-            }
+            this.currentTool.pointermove(this, pointer);
         });
         this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
-            if (this.g_waypointMatrix[activeWaypoint.cellX][activeWaypoint.cellY] == null) {
-                this.g_waypointMatrix[activeWaypoint.cellX][activeWaypoint.cellY] = activeWaypoint;
-                if (this.g_waypointList.indexOf(activeWaypoint) < 0) this.g_waypointList.push(activeWaypoint);
-                this.printWaypoints();
-                activeWaypoint = null;
-            }
+            this.currentTool.pointerup(this, pointer);
         });
     }
 
@@ -143,7 +133,7 @@ export class MainScene extends Phaser.Scene implements GM {
         }
     }
 
-    private printWaypoints() {
+    public printWaypoints() {
         console.log(`Waypoints(${this.g_waypointMatrix.length},${this.g_waypointMatrix[0].length})`
             + `\n${transpose(this.g_waypointMatrix).map(row => row.map(item => (!item ? '_' : item.toString()).padEnd(4, ' ')).join(' ')).join('\n')}`
             + ``);
@@ -169,7 +159,6 @@ export class MainScene extends Phaser.Scene implements GM {
             if (this.g_waypointList.length < id + 1) this.g_waypointList.length = id + 1;
             this.g_waypointList[id] = activeWaypoint;
 
-            this.printWaypoints();
             return this;
         }
         throw `addWaypoint already occupied(${cellX}, ${cellY}`;
@@ -186,7 +175,71 @@ export class MainScene extends Phaser.Scene implements GM {
             this.addWaypoint(id, cellX, cellY, connects);
         });
 
-        this.g_waypointList.forEach(w => w.updateConnectionsDebug(this.g_waypointList));
+        this.printWaypoints();
+
+        this.g_waypointList.forEach(w => {
+            w.updateDistanceList(this.g_waypointList);
+            w.updateConnectionsDebug(this.g_waypointList);
+        });
+
+        setTimeout(() => {
+            this.g_waypointList.forEach(w => {
+                w.updateShortestPathTree(this.g_waypointList);
+            });
+        }, 1000);
+    }
+
+    public getWaypoints(from: number, to: number) {
+        return Waypoint.getWaypoints(this.g_waypointList, from, to);
+    }
+
+    public drawWaypoints(from: number, to: number) {
+        const { route, totalDist } = this.getWaypoints(from, to);
+        console.log(`hops: [${route.join(', ')}]`);
+
+        let lastWaypoint = this.g_waypointList[route[0]];
+        const g_group = this.add.container(0, 0,
+            route.slice(1, route.length).map(waypointID => {
+                const g_waypoint = this.g_waypointList[waypointID];
+                const g_line = new Phaser.GameObjects.Graphics(this, {
+                    x: lastWaypoint.x + config.cellWidth / 2,
+                    y: lastWaypoint.y + config.cellHeight / 2,
+                    fillStyle: { color: 0x000000, alpha: 1 },
+                    lineStyle: { width: 10, color: 0x000000, alpha: 1 },
+                });
+                let delta = new Vector2(g_waypoint.x - lastWaypoint.x, g_waypoint.y - lastWaypoint.y);
+                g_line.lineBetween(0, 0, delta.x, delta.y);
+
+                lastWaypoint = g_waypoint;
+                return g_line;
+            })
+        );
+
+        g_group.add(new Phaser.GameObjects.Text(this,
+            lastWaypoint.x, lastWaypoint.y,
+            '' + totalDist,
+            {
+                ...defaultTextStyle,
+                color: 'green'
+            }));
+
+        const fromWaypoint = this.g_waypointList[from];
+        const g_circle = new Phaser.GameObjects.Graphics(this, {
+            x: fromWaypoint.x + config.cellWidth / 2, y: fromWaypoint.y + config.cellHeight / 2,
+            fillStyle: { color: 0xfcfcf9, alpha: 1 },
+            lineStyle: { width: 5, color: 0x000000, alpha: 1 },
+        });
+        g_circle.strokeCircle(0, 0, 20);
+        g_group.add(g_circle);
+
+        this.tweens.add({
+            targets: g_group,
+            alpha: 0,
+            duration: 4500,
+            onComplete: () => {
+                g_group.destroy();
+            },
+        })
     }
 
     public spawnBoy() {
@@ -196,5 +249,61 @@ export class MainScene extends Phaser.Scene implements GM {
         if (!cell) throw 'cell not found. id=' + cellID;
         this.boy = new Boy(this, cell.cellX, cell.cellY);
         this.add.existing(this.boy);
+    }
+}
+
+interface Tool {
+    activeWaypoint: Waypoint;
+    pointerdown(scene: MainScene, pointer: Phaser.Input.Pointer): void;
+    pointermove(scene: MainScene, pointer: Phaser.Input.Pointer): void;
+    pointerup(scene: MainScene, pointer: Phaser.Input.Pointer): void;
+}
+
+class WaypointTool implements Tool {
+    activeWaypoint: Waypoint = null;
+
+    pointerdown(scene: MainScene, pointer: Phaser.Input.Pointer) {
+        const cellPos = scene.getCellPosition(pointer.x, pointer.y);
+        if (!this.activeWaypoint) {
+            if (scene.g_waypointMatrix[cellPos.x][cellPos.y] != null) {
+                this.activeWaypoint = scene.g_waypointMatrix[cellPos.x][cellPos.y];
+                scene.g_waypointMatrix[cellPos.x][cellPos.y] = null;
+            } else {
+                this.activeWaypoint = scene.add.existing(new Waypoint(scene, scene.g_waypointList.length, cellPos.x, cellPos.y)) as Waypoint;
+            }
+        }
+    }
+    pointermove(scene: MainScene, pointer: Phaser.Input.Pointer) {
+        if (this.activeWaypoint) {
+            const cellPos = scene.getCellPosition(pointer.x, pointer.y);
+            this.activeWaypoint.setCellPosition(cellPos.x, cellPos.y);
+        }
+    }
+    pointerup(scene: MainScene, pointer: Phaser.Input.Pointer) {
+        if (scene.g_waypointMatrix[this.activeWaypoint.cellX][this.activeWaypoint.cellY] == null) {
+            scene.g_waypointMatrix[this.activeWaypoint.cellX][this.activeWaypoint.cellY] = this.activeWaypoint;
+            if (scene.g_waypointList.indexOf(this.activeWaypoint) < 0) scene.g_waypointList.push(this.activeWaypoint);
+            scene.printWaypoints();
+            this.activeWaypoint = null;
+        }
+    }
+}
+
+class BoyDebugTool implements Tool {
+    activeWaypoint: Waypoint = null;
+
+    pointerdown(scene: MainScene, pointer: Phaser.Input.Pointer) {
+    }
+    pointermove(scene: MainScene, pointer: Phaser.Input.Pointer) {
+    }
+    pointerup(scene: MainScene, pointer: Phaser.Input.Pointer) {
+        const cellPos = scene.getCellPosition(pointer.x, pointer.y);
+        console.log('pointerup', cellPos);
+        const boyPosID = scene.g_waypointMatrix[scene.boy.cellX][scene.boy.cellY].id;
+        const wayPoint = scene.g_waypointMatrix[cellPos.x][cellPos.y];
+        if (wayPoint != null) {
+            scene.boy.pushWaypoints(scene.getWaypoints(boyPosID, wayPoint.id).route);
+            scene.boy.tryStartMoving();
+        }
     }
 }

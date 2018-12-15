@@ -1,6 +1,14 @@
 
 type Pointer = Phaser.Input.Pointer;
 type GameObject = Phaser.GameObjects.GameObject;
+type Vector2 = Phaser.Math.Vector2;
+type DistanceMap = {
+    [x: number]: { dist: number },
+};
+type RoutingTable = {
+    [x: number]: { nextHop: number, totalDist: number },
+};
+
 const Vector2 = Phaser.Math.Vector2;
 import { EventContext, defaultTextStyle, compareNumber } from './Utils';
 import { config } from './config';
@@ -12,6 +20,8 @@ export class Waypoint extends Phaser.GameObjects.Container {
     public connectsList: number[] = [];
     public g_connectorGroup: Phaser.GameObjects.Container;
     public debugColor: number; // color hex number
+    public distanceMap: DistanceMap = {};
+    public routingTable: RoutingTable = {};
 
 
     constructor(scene: Phaser.Scene, id: integer, cellX: number, cellY: number, connects: number[] = [], children: GameObject[] = []) {
@@ -55,21 +65,118 @@ export class Waypoint extends Phaser.GameObjects.Container {
             + ``);
     }
 
-    updateConnectionsDebug(waypointlist: Waypoint[]) {
+    updateConnectionsDebug(g_waypointList: Waypoint[]) {
         this.g_connectorGroup.removeAll(true);
         this.connectsList.forEach(neighbourID => {
-            const neighbour = waypointlist[neighbourID];
-            const lineGraphics = new Phaser.GameObjects.Graphics(this.scene, {
+            const neighbour = g_waypointList[neighbourID];
+            const g_line = new Phaser.GameObjects.Graphics(this.scene, {
                 x: config.cellWidth / 2, y: config.cellHeight / 2,
                 fillStyle: { color: this.debugColor, alpha: 1 },
                 lineStyle: { width: 5, color: this.debugColor, alpha: 1 },
             });
             let delta = new Vector2(neighbour.x - this.x, neighbour.y - this.y);
             delta.scale(0.5);
-            lineGraphics.lineBetween(0, 0, delta.x, delta.y);
+            g_line.lineBetween(0, 0, delta.x, delta.y);
 
-            this.g_connectorGroup.add(lineGraphics);
+            this.g_connectorGroup.add(g_line);
+
+
+            const g_text = new Phaser.GameObjects.Text(this.scene,
+                delta.x + config.cellWidth / 2, delta.y + config.cellHeight / 2,
+                '' + this.distanceMap[neighbourID].dist.toFixed(2),
+                {
+                    ...defaultTextStyle,
+                    color: 'red',
+                }
+            );
+
+            this.g_connectorGroup.add(g_text);
         })
+    }
+
+    updateDistanceList(g_waypointList: Waypoint[]) {
+        this.connectsList.forEach((neighbourID) => {
+            const neighbour = g_waypointList[neighbourID];
+            let delta = new Vector2(neighbour.cellX - this.cellX, neighbour.cellY - this.cellY);
+            const dist = delta.distance(Phaser.Math.Vector2.ZERO as any);
+            this.distanceMap[neighbourID] = { dist };
+        });
+    }
+
+    updateShortestPathTree(g_waypointList: Waypoint[]) {
+        const visited: { [x: number]: boolean } = {};
+        const totalVertices = g_waypointList.length;
+        let doneVerticies = 0;
+        this.routingTable[this.id] = { nextHop: null, totalDist: 0 };
+        // g_waypointList.forEach(g_waypoint => {
+        //     if (g_waypoint.id === this.id) {
+        //     }
+        //     this.routingTable[g_waypoint.id] = { nextHop: null, totalDist: Infinity };
+        // });
+
+        let target = this as Waypoint;
+        let minDist = 0;
+        let minDistID = this.id;
+        let minNeighbourID = -1;
+
+        do {
+            target = g_waypointList[minDistID];
+            target.connectsList
+                .filter((neighbourID) => visited[neighbourID] == null)  // for each unvisited pool neighbour
+                .forEach((neighbourID) => {
+                    if (visited[neighbourID] == null) {
+                        visited[neighbourID] = false;
+                    }
+                    const neighbour = g_waypointList[neighbourID];
+                    neighbour.routingTable[this.id] = {
+                        nextHop: target.id,
+                        totalDist: target.distanceMap[neighbourID].dist + minDist
+                    };
+                });
+            visited[target.id] = true;
+
+            minDist = Infinity;
+            minDistID = -1;
+            minNeighbourID = -1;
+
+            // get min dist
+            (Object.keys(visited).map(Number)
+                .filter((neighbourID) => visited[neighbourID] === false)  // for each unvisited queued neighbour
+                .forEach(neighbourID => {
+                    const neighbour = g_waypointList[neighbourID];
+                    (neighbour.connectsList
+                        .filter(hisNeighbourID => visited[hisNeighbourID] === true)   // find neighbour whose neighbour is visited
+                        .forEach((hisNeighbourID) => {
+                            const distToMe = neighbour.routingTable[this.id].totalDist;
+                            if (distToMe < minDist) {
+                                minDistID = neighbourID;
+                                minNeighbourID = hisNeighbourID;
+                                minDist = distToMe;
+                            }
+                        })
+                    );
+                })
+            );
+
+            doneVerticies++;
+        } while (doneVerticies + 1 < totalVertices);
+
+    }
+    getWaypointsTo(g_waypointList: Waypoint[], waypointID: integer) {
+        const result = [];
+        let target = this as Waypoint;
+        while (target.id !== waypointID) {
+            target = g_waypointList[target.routingTable[waypointID].nextHop];
+            result.push(target.id);
+        }
+        return {
+            route: result,
+            totalDist: this.routingTable[waypointID].totalDist,
+        };
+    }
+
+    static getWaypoints(g_waypointList: Waypoint[], from: integer, to: integer) {
+        return g_waypointList[from].getWaypointsTo(g_waypointList, to);
     }
 }
 
@@ -80,9 +187,9 @@ export class WaypointGraphics extends Phaser.GameObjects.Graphics {
     strokeRoundedRect: (x: number, y: number, w: number, h: number, r: number | { tl: number, tr: number, bl: number, br: number }) => this;
 
     w: number; h: number;
-    debugColor:number;
+    debugColor: number;
 
-    constructor(scene: Phaser.Scene, debugColor:number, x: number, y: number) {
+    constructor(scene: Phaser.Scene, debugColor: number, x: number, y: number) {
         super(scene, {
             x, y,
             fillStyle: { color: debugColor, alpha: 1 },
@@ -103,3 +210,4 @@ export class WaypointGraphics extends Phaser.GameObjects.Graphics {
         this.fillCircle(0, 0, 10);
     }
 }
+

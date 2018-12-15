@@ -13,6 +13,29 @@ config:
 
   level:
     waypoints:
+      # # debug
+      # - id: 0
+      #   cellX: 0
+      #   cellY: 1
+      #   connects: [1]
+      # - id: 1
+      #   cellX: 3
+      #   cellY: 1
+      #   connects: [0, 2, 3]
+      # - id: 2
+      #   cellX: 6
+      #   cellY: 1
+      #   connects: [1, 4]
+      # - id: 3
+      #   cellX: 3
+      #   cellY: 3
+      #   connects: [1, 4]
+      # - id: 4
+      #   cellX: 5
+      #   cellY: 3
+      #   connects: [2, 3]
+
+      # actual
       - id: 0
         cellX: 0
         cellY: 1

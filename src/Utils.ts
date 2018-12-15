@@ -35,3 +35,12 @@ export const indent = (indentCount: integer, paddingStr: string) => (str: string
 );
 
 export const compareNumber = (a: number, b: number) => (a - b);
+
+// (<any>Array.prototype).inspect = function () {
+//     console.log(this);
+//     return this;
+// };
+// (<any>Array.prototype).do = function (callback: (a: any) => {}) {
+//     callback(this);
+//     return this;
+// };
