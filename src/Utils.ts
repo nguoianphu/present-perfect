@@ -15,3 +15,11 @@ export type EventContext = {
 }
 
 export const defaultFont = 'Helvetica, Arial, SimHei';
+
+export function transpose(matrix: Array<Array<any>>) {
+    return matrix[0].slice().fill(1).map((col, c) => {
+        return matrix.map((row, r) => {
+            return matrix[r][c];
+        })
+    });
+}

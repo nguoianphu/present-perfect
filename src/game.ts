@@ -4,11 +4,12 @@
 
 import "phaser";
 import { MainScene } from "./scenes/mainScene";
+import { config as configFile } from './config';
 
 // main game configuration
 const config: GameConfig = {
-    width: 360,
-    height: 640,
+    width: configFile.cellWidth * configFile.cellCountW,
+    height: configFile.cellHeight * configFile.cellCountH,
     disableContextMenu: true,
     type: Phaser.AUTO,
     parent: "game",
@@ -35,14 +36,14 @@ window.onload = () => {
     // setTimeout(() => {
     // }, 100);
     function handleSizeUpdate(event?: Event) {
-        const ww = window.innerWidth / 360;
-        const hh = window.innerHeight / 640;
+        const ww = window.innerWidth / 1920;
+        const hh = window.innerHeight / 1080;
 
         const min = Math.min(ww, hh);
         console.log('handleSizeUpdate', window.innerWidth, ww, window.innerHeight, hh, min);
 
-        game.canvas.style.width = `${min * 360}px`;
-        game.canvas.style.height = `${min * 640}px`;
+        game.canvas.style.width = `${min * 1920}px`;
+        game.canvas.style.height = `${min * 1080}px`;
     }
 
     if (!window.location.search.includes('video')) {

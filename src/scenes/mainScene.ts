@@ -1,11 +1,12 @@
 import { bindAll } from 'lodash';
 
 
-import { EventContext, defaultFont } from '../Utils';
+import { EventContext, defaultFont, transpose } from '../Utils';
 import { CardButton } from '../UI/CardButton';
 
-import { config, ISpriteSpec, IDifficulty, IDifficultyWave } from '../config';
+import { config } from '../config';
 import { GM } from '../GM';
+import { Waypoint } from '../Waypoint';
 
 type Pointer = Phaser.Input.Pointer;
 
@@ -16,66 +17,17 @@ interface IMoveKeys {
     left: Phaser.Input.Keyboard.Key,
 }
 
-export const faction1 = ['天', '下', '太', '平'];
-
-export class Structure {
-    public name = 'structure';
-    constructor(name: string = 'structure') {
-        this.name = name;
-    }
-
-    toString() {
-        return this.name;
-    }
-}
-
-export class Player {
-    public structures: Structure[][];
-    public structureDepth: number = 0;
-    public faction = faction1;
-    public btns: CardButton[] = [];
-
-    build(structureOrName: Structure | string, depth: number = this.structureDepth): void {
-        if (typeof structureOrName === 'string') return this.build(new Structure(name), depth);
-        const structure: Structure = structureOrName;
-        this.structures[depth].push(structure);
-    }
-
-    getLevelAt(depth: number): number {
-        return this.structures[depth].length;
-    }
-
-    advanceDepth(): void {
-        this.structureDepth++;
-        if (!this.structures[this.structureDepth]) {
-            this.structures[this.structureDepth] = [];
-        }
-    }
-
-    decreaseDepth(): void {
-        this.structureDepth--;
-    }
-
-    upgradeBase(): void {
-        this.build(new Structure(this.faction[this.getLevelAt(0) + 1]), 0);
-    }
-
-    canBuild(name: string) {
-
-    }
-}
 
 export class MainScene extends Phaser.Scene implements GM {
 
     private moveKeys: IMoveKeys;
-    private player1: Player;
-    private player2: Player;
-    private group1: Phaser.GameObjects.Container;
+    private tilesContainer: Phaser.GameObjects.Container;
     private group2: Phaser.GameObjects.Container;
 
     private bg: Phaser.GameObjects.Image;
-    private fullscreenButton: Phaser.GameObjects.Text;
-    private group = Phaser.GameObjects.Group;
+    private tilesGroup: Phaser.GameObjects.Group;
+
+    public waypointList: Waypoint[][] = new Array(config.cellCountW).fill(1).map(_ => new Array(config.cellCountH));
 
     constructor() {
         super({
@@ -91,63 +43,17 @@ export class MainScene extends Phaser.Scene implements GM {
     create(): void {
         (<any>window).scene = this;
 
-        this.player1 = new Player();
-        this.player2 = new Player();
-
         this.bg = this.add.image(0, 0, 'bg')
-            .setAngle(90)
+            .setScale(1920 / 1280 * 2, 1080 / 720 * 2)
             ;
 
         const padding = 4;
         const w = (this.sys.canvas.width - padding - padding) / 7;
         const h = w / 0.75;
 
-        this.group1 = this.add.container(this.sys.canvas.width, h);
-        this.group1.setAngle(180);
-        this.group2 = this.add.container(0, this.sys.canvas.height - h - 2 * padding);
+        this.tilesContainer = this.add.container(0, 0);
 
-        this.player1.btns = new Array(7).fill(1).map((_, i) => {
-            return (new CardButton(
-                this,
-                0 + padding + w / 2 + w * i, - padding + h / 2,
-                w, h,
-                [
-                    this.make.text({
-                        x: 0, y: 0,
-                        text: `hello\nA${i}`,
-                        style: {
-                            color: '#000000',
-                            align: 'center',
-                            fontFamily: defaultFont,
-                        },
-                        origin: { x: 0.5, y: 0.5 },
-                    })
-                ]
-            ));
-        });
-        this.group1.add(this.player1.btns);
-
-
-        this.player2.btns = new Array(7).fill(1).map((_, i) => {
-            return (new CardButton(
-                this,
-                0 + padding + w / 2 + w * i, 0 + padding + h / 2,
-                w, h,
-                [
-                    this.make.text({
-                        x: 0, y: 0,
-                        text: `hello\nB${i}`,
-                        style: {
-                            color: '#000000',
-                            align: 'center',
-                            fontFamily: defaultFont,
-                        },
-                        origin: { x: 0.5, y: 0.5 },
-                    })
-                ]
-            ));
-        });
-        this.group2.add(this.player2.btns);
+        this.registerMouse();
     }
 
     update(time: number, delta: number): void {
@@ -187,10 +93,38 @@ export class MainScene extends Phaser.Scene implements GM {
         });
     }
 
+    getCellPosition(x: number, y: number) {
+        return new Phaser.Math.Vector2(
+            Phaser.Math.Clamp(Math.round(x / config.cellWidth), 0, config.cellCountW - 1),
+            Phaser.Math.Clamp(Math.round(y / config.cellHeight), 0, config.cellCountH - 1),
+        )
+    }
+
     private registerMouse(): void {
+        let activeWaypoint: Waypoint = null;
         this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+            const cellPos = this.getCellPosition(pointer.x, pointer.y);
+            if (!activeWaypoint) {
+                if (this.waypointList[cellPos.x][cellPos.y] != null) {
+                    activeWaypoint = this.waypointList[cellPos.x][cellPos.y];
+                    this.waypointList[cellPos.x][cellPos.y] = null;
+                } else {
+                    activeWaypoint = this.add.existing(new Waypoint(this, cellPos.x, cellPos.y)) as Waypoint;
+                }
+            }
+        });
+        this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+            if (activeWaypoint) {
+                const cellPos = this.getCellPosition(pointer.x, pointer.y);
+                activeWaypoint.setCellPosition(cellPos.x, cellPos.y);
+            }
         });
         this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
+            if (this.waypointList[activeWaypoint.cellX][activeWaypoint.cellY] == null) {
+                this.waypointList[activeWaypoint.cellX][activeWaypoint.cellY] = activeWaypoint;
+                this.printWaypoints();
+                activeWaypoint = null;
+            }
         });
     }
 
@@ -199,5 +133,11 @@ export class MainScene extends Phaser.Scene implements GM {
         if (fullscreenName) {
             return (<any>this.sys.canvas)[fullscreenName]();
         }
+    }
+
+    private printWaypoints() {
+        console.log(`Waypoints(${this.waypointList.length},${this.waypointList[0].length})`
+            + `\n${transpose(this.waypointList).map(row => row.map(item => (!item ? '_' : item.toString()).padEnd(5 , ' ')).join(' ')).join('\n')}`
+            + ``);
     }
 }

@@ -21,33 +21,11 @@ export interface IDifficultyEnding {
 }
 
 export type IConfig = {
-    player: {
-        hp: number,
-        mass: number,
-        drag: number,
-        topSpeed: number,
-        accel: number,
-    },
-    playerPart: {
-        hp: number,
-        mass: number,
-        drag: number,
-        bounce: number,
-        gunOffsetX: number,
-        gunOffsetY: number,
-        gunOffsetNoise: number,
-        partWingCandidates: ISpriteSpec[],
-        partGunCandidates: ISpriteSpec[],
-    },
-    enemy: {
-        hp: number,
-        mass: number,
-        drag: number,
-        shootRate: number,
-        bulletSpeed: number,
-        bowOutTime: number,
-    },
-    difficultyCurve:IDifficulty[],
+    cellWidth: number;
+    cellHeight: number;
+    cellCountW: number;
+    cellCountH: number;
+
 }
 
 
