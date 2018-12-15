@@ -16,6 +16,12 @@ export type EventContext = {
 
 export const defaultFont = 'Helvetica, Arial, SimHei';
 
+export const defaultTextStyle = {
+    fontFamily: defaultFont,
+    color: 'black',
+    fontSize: 40,
+};
+
 export function transpose(matrix: Array<Array<any>>) {
     return matrix[0].slice().fill(1).map((col, c) => {
         return matrix.map((row, r) => {

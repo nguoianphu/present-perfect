@@ -27,7 +27,8 @@ export class MainScene extends Phaser.Scene implements GM {
     private bg: Phaser.GameObjects.Image;
     private tilesGroup: Phaser.GameObjects.Group;
 
-    public waypointList: Waypoint[][] = new Array(config.cellCountW).fill(1).map(_ => new Array(config.cellCountH));
+    public waypointMatrix: Waypoint[][] = new Array(config.cellCountW).fill(1).map(_ => new Array(config.cellCountH));
+    public waypointList: Waypoint[] = [];
 
     constructor() {
         super({
@@ -95,8 +96,8 @@ export class MainScene extends Phaser.Scene implements GM {
 
     getCellPosition(x: number, y: number) {
         return new Phaser.Math.Vector2(
-            Phaser.Math.Clamp(Math.round(x / config.cellWidth), 0, config.cellCountW - 1),
-            Phaser.Math.Clamp(Math.round(y / config.cellHeight), 0, config.cellCountH - 1),
+            Phaser.Math.Clamp(Math.floor(x / config.cellWidth), 0, config.cellCountW - 1),
+            Phaser.Math.Clamp(Math.floor(y / config.cellHeight), 0, config.cellCountH - 1),
         )
     }
 
@@ -105,11 +106,11 @@ export class MainScene extends Phaser.Scene implements GM {
         this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
             const cellPos = this.getCellPosition(pointer.x, pointer.y);
             if (!activeWaypoint) {
-                if (this.waypointList[cellPos.x][cellPos.y] != null) {
-                    activeWaypoint = this.waypointList[cellPos.x][cellPos.y];
-                    this.waypointList[cellPos.x][cellPos.y] = null;
+                if (this.waypointMatrix[cellPos.x][cellPos.y] != null) {
+                    activeWaypoint = this.waypointMatrix[cellPos.x][cellPos.y];
+                    this.waypointMatrix[cellPos.x][cellPos.y] = null;
                 } else {
-                    activeWaypoint = this.add.existing(new Waypoint(this, cellPos.x, cellPos.y)) as Waypoint;
+                    activeWaypoint = this.add.existing(new Waypoint(this, this.waypointList.length, cellPos.x, cellPos.y)) as Waypoint;
                 }
             }
         });
@@ -120,8 +121,9 @@ export class MainScene extends Phaser.Scene implements GM {
             }
         });
         this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
-            if (this.waypointList[activeWaypoint.cellX][activeWaypoint.cellY] == null) {
-                this.waypointList[activeWaypoint.cellX][activeWaypoint.cellY] = activeWaypoint;
+            if (this.waypointMatrix[activeWaypoint.cellX][activeWaypoint.cellY] == null) {
+                this.waypointMatrix[activeWaypoint.cellX][activeWaypoint.cellY] = activeWaypoint;
+                this.waypointList.push(activeWaypoint);
                 this.printWaypoints();
                 activeWaypoint = null;
             }
@@ -136,8 +138,8 @@ export class MainScene extends Phaser.Scene implements GM {
     }
 
     private printWaypoints() {
-        console.log(`Waypoints(${this.waypointList.length},${this.waypointList[0].length})`
-            + `\n${transpose(this.waypointList).map(row => row.map(item => (!item ? '_' : item.toString()).padEnd(5 , ' ')).join(' ')).join('\n')}`
+        console.log(`Waypoints(${this.waypointMatrix.length},${this.waypointMatrix[0].length})`
+            + `\n${transpose(this.waypointMatrix).map(row => row.map(item => (!item ? '_' : item.toString()).padEnd(4, ' ')).join(' ')).join('\n')}`
             + ``);
     }
 }
