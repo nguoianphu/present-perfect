@@ -29,3 +29,9 @@ export function transpose(matrix: Array<Array<any>>) {
         })
     });
 }
+
+export const indent = (indentCount: integer, paddingStr: string) => (str: string) => (
+    str.split('\n').map(s => `${paddingStr.repeat(indentCount)}${s}`).join('\n')
+);
+
+export const compareNumber = (a: number, b: number) => (a - b);

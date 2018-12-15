@@ -1,32 +1,33 @@
-export type ISpriteSpec = {
-    key: string, frame: string
-}
-
-
-export type IDifficulty = IDifficultyWave | IDifficultyEnding;
-
-export interface IDifficultyWave {
-    wait: number;
-    desc?: string;
-    allowedEnemies: number;
-    enemyHP: number;
-    enemySpawnInterval: number;
-    end?: boolean;
-}
-
-export interface IDifficultyEnding {
-    wait: number;
-    desc?: string;
-    end: boolean;
-}
 
 export type IConfig = {
     cellWidth: number;
     cellHeight: number;
-    cellCountW: number;
-    cellCountH: number;
-
+    cellCountW: integer;
+    cellCountH: integer;
+    debug: Debug;
+    boy: Boy;
+    level: Level;
 }
+
+export interface Debug {
+    showWaypoint: boolean;
+    showBoyFoot: boolean;
+}
+export interface Boy {
+    startCellID: integer;
+}
+
+export interface Level {
+    waypoints: Waypoint[]
+}
+
+export interface Waypoint {
+    id: integer;
+    cellX: integer;
+    cellY: integer;
+    connects: integer[];
+}
+
 
 
 const c = require('json-loader!yaml-loader!./config.yml');

@@ -1,12 +1,13 @@
 import { bindAll } from 'lodash';
 
 
-import { EventContext, defaultFont, transpose } from '../Utils';
+import { EventContext, defaultFont, transpose, indent, compareNumber } from '../Utils';
 import { CardButton } from '../UI/CardButton';
 
 import { config } from '../config';
 import { GM } from '../GM';
 import { Waypoint } from '../Waypoint';
+import { Boy } from '../Boy';
 
 type Pointer = Phaser.Input.Pointer;
 
@@ -29,6 +30,8 @@ export class MainScene extends Phaser.Scene implements GM {
 
     public waypointMatrix: Waypoint[][] = new Array(config.cellCountW).fill(1).map(_ => new Array(config.cellCountH));
     public waypointList: Waypoint[] = [];
+
+    public boy: Boy;
 
     constructor() {
         super({
@@ -53,6 +56,9 @@ export class MainScene extends Phaser.Scene implements GM {
         const h = w / 0.75;
 
         this.tilesContainer = this.add.container(0, 0);
+
+        this.spawnWaypoints();
+        this.spawnBoy();
 
         this.registerMouse();
     }
@@ -123,7 +129,7 @@ export class MainScene extends Phaser.Scene implements GM {
         this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
             if (this.waypointMatrix[activeWaypoint.cellX][activeWaypoint.cellY] == null) {
                 this.waypointMatrix[activeWaypoint.cellX][activeWaypoint.cellY] = activeWaypoint;
-                this.waypointList.push(activeWaypoint);
+                if (this.waypointList.indexOf(activeWaypoint) < 0) this.waypointList.push(activeWaypoint);
                 this.printWaypoints();
                 activeWaypoint = null;
             }
@@ -141,5 +147,54 @@ export class MainScene extends Phaser.Scene implements GM {
         console.log(`Waypoints(${this.waypointMatrix.length},${this.waypointMatrix[0].length})`
             + `\n${transpose(this.waypointMatrix).map(row => row.map(item => (!item ? '_' : item.toString()).padEnd(4, ' ')).join(' ')).join('\n')}`
             + ``);
+    }
+
+    private packWaypoints(indentCount: integer) {
+        const ymlString = (this.waypointList
+            .sort((a, b) => a.id - b.id)
+            .map(waypoint => waypoint.toYaml())
+            .map(indent(indentCount, '  '))
+            .join('\n')
+        );
+        console.log(`Waypoints(${this.waypointList.length})`
+            + `\n${ymlString}`
+            + ``);
+    }
+
+    public addWaypoint(id: number, cellX: number, cellY: number, connects: number[] = []): this {
+        if (this.waypointMatrix[cellX][cellY] == null) {
+            const activeWaypoint = this.add.existing(new Waypoint(this, id, cellX, cellY, connects)) as Waypoint;
+            this.waypointMatrix[activeWaypoint.cellX][activeWaypoint.cellY] = activeWaypoint;
+
+            if (this.waypointList.length < id + 1) this.waypointList.length = id + 1;
+            this.waypointList[id] = activeWaypoint;
+
+            this.printWaypoints();
+            return this;
+        }
+        throw `addWaypoint already occupied(${cellX}, ${cellY}`;
+    }
+
+    public spawnWaypoints() {
+        config.level.waypoints.forEach((waypoint) => {
+            const {
+                id,
+                cellX,
+                cellY,
+                connects,
+            } = waypoint;
+            this.addWaypoint(id, cellX, cellY, connects);
+        });
+
+        this.waypointList.forEach(w => w.updateConnectionsDebug(this.waypointList));
+    }
+
+    public spawnBoy() {
+        const configBoy = config.boy;
+        const cellID = configBoy.startCellID;
+        const cell = this.waypointList[cellID];
+        if (!cell) throw 'cell not found. id=' + cellID;
+        this.boy = new Boy(this, cell.cellX, cell.cellY);
+        this.add.existing(this.boy);
     }
 }
