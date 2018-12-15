@@ -8,9 +8,9 @@ export class Boy extends Phaser.GameObjects.Container {
     public cellX: number;
     public cellY: number;
 
-    private boyGraphic: Phaser.GameObjects.Graphics;
-    private boyFoot: BoyFoot;
-    private debugText: Phaser.GameObjects.Text;
+    private g_boyGraphic: Phaser.GameObjects.Graphics;
+    private g_boyFoot: BoyFoot;
+    private g_debugText: Phaser.GameObjects.Text;
 
     constructor(scene: Phaser.Scene, cellX: number, cellY: number, children: GameObject[] = []) {
         super(scene, cellX, cellY);
@@ -20,24 +20,24 @@ export class Boy extends Phaser.GameObjects.Container {
         this.x = cellX * config.cellWidth;
         this.y = cellY * config.cellHeight;
 
-        this.boyGraphic = new Phaser.GameObjects.Graphics(scene, {
+        this.g_boyGraphic = new Phaser.GameObjects.Graphics(scene, {
             x: config.cellWidth / 2, y: config.cellHeight / 2,
             fillStyle: { color: 0xfcfcf9, alpha: 1 },
             lineStyle: { width: 1, color: 0xAAAAAA, alpha: 1 },
         });
 
         const color = (<Phaser.Display.Color>(<any>new Phaser.Display.Color()).random()).color;
-        this.boyGraphic.fillStyle(color, 1);
-        this.boyGraphic.fillRect(-20, -64, 40, 64);
-        this.add(this.boyGraphic);
+        this.g_boyGraphic.fillStyle(color, 1);
+        this.g_boyGraphic.fillRect(-20, -64, 40, 64);
+        this.add(this.g_boyGraphic);
 
-        this.boyFoot = new BoyFoot(scene, config.cellWidth / 2, config.cellHeight / 2);
-        this.boyFoot.setVisible(config.debug.showBoyFoot);
-        this.add(this.boyFoot);
+        this.g_boyFoot = new BoyFoot(scene, config.cellWidth / 2, config.cellHeight / 2);
+        this.g_boyFoot.setVisible(config.debug.showBoyFoot);
+        this.add(this.g_boyFoot);
 
-        this.debugText = new Phaser.GameObjects.Text(scene, config.cellWidth / 2, config.cellHeight / 2, '', defaultTextStyle)
-        this.debugText.setVisible(config.debug.showBoyFoot);
-        this.add(this.debugText);
+        this.g_debugText = new Phaser.GameObjects.Text(scene, config.cellWidth / 2, config.cellHeight / 2, '', defaultTextStyle)
+        this.g_debugText.setVisible(config.debug.showBoyFoot);
+        this.add(this.g_debugText);
         // this.add(children);
     }
 

@@ -10,8 +10,9 @@ export class Waypoint extends Phaser.GameObjects.Container {
     public cellX: number;
     public cellY: number;
     public connectsList: number[] = [];
-    public connectorGroup: Phaser.GameObjects.Container;
+    public g_connectorGroup: Phaser.GameObjects.Container;
     public debugColor: number; // color hex number
+
 
     constructor(scene: Phaser.Scene, id: integer, cellX: number, cellY: number, connects: number[] = [], children: GameObject[] = []) {
         super(scene, cellX, cellY);
@@ -24,8 +25,8 @@ export class Waypoint extends Phaser.GameObjects.Container {
         this.x = cellX * config.cellWidth;
         this.y = cellY * config.cellHeight;
 
-        this.connectorGroup = new Phaser.GameObjects.Container(scene, 0, 0);
-        this.add(this.connectorGroup);
+        this.g_connectorGroup = new Phaser.GameObjects.Container(scene, 0, 0);
+        this.add(this.g_connectorGroup);
 
         this.add(new WaypointGraphics(scene, this.debugColor, config.cellWidth / 2, config.cellHeight / 2));
         this.add(new Phaser.GameObjects.Text(scene, config.cellWidth / 2, config.cellHeight / 2, '' + this.id, defaultTextStyle));
@@ -55,7 +56,7 @@ export class Waypoint extends Phaser.GameObjects.Container {
     }
 
     updateConnectionsDebug(waypointlist: Waypoint[]) {
-        this.connectorGroup.removeAll(true);
+        this.g_connectorGroup.removeAll(true);
         this.connectsList.forEach(neighbourID => {
             const neighbour = waypointlist[neighbourID];
             const lineGraphics = new Phaser.GameObjects.Graphics(this.scene, {
@@ -67,7 +68,7 @@ export class Waypoint extends Phaser.GameObjects.Container {
             delta.scale(0.5);
             lineGraphics.lineBetween(0, 0, delta.x, delta.y);
 
-            this.connectorGroup.add(lineGraphics);
+            this.g_connectorGroup.add(lineGraphics);
         })
     }
 }

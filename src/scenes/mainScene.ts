@@ -22,14 +22,14 @@ interface IMoveKeys {
 export class MainScene extends Phaser.Scene implements GM {
 
     private moveKeys: IMoveKeys;
-    private tilesContainer: Phaser.GameObjects.Container;
-    private group2: Phaser.GameObjects.Container;
+    private g_tilesContainer: Phaser.GameObjects.Container;
+    private g_group2: Phaser.GameObjects.Container;
 
-    private bg: Phaser.GameObjects.Image;
-    private tilesGroup: Phaser.GameObjects.Group;
+    private g_bg: Phaser.GameObjects.Image;
+    private g_tilesGroup: Phaser.GameObjects.Group;
 
-    public waypointMatrix: Waypoint[][] = new Array(config.cellCountW).fill(1).map(_ => new Array(config.cellCountH));
-    public waypointList: Waypoint[] = [];
+    public g_waypointMatrix: Waypoint[][] = new Array(config.cellCountW).fill(1).map(_ => new Array(config.cellCountH));
+    public g_waypointList: Waypoint[] = [];
 
     public boy: Boy;
 
@@ -47,7 +47,7 @@ export class MainScene extends Phaser.Scene implements GM {
     create(): void {
         (<any>window).scene = this;
 
-        this.bg = this.add.image(0, 0, 'bg')
+        this.g_bg = this.add.image(0, 0, 'bg')
             .setScale(1920 / 1280 * 2, 1080 / 720 * 2)
             ;
 
@@ -55,7 +55,7 @@ export class MainScene extends Phaser.Scene implements GM {
         const w = (this.sys.canvas.width - padding - padding) / 7;
         const h = w / 0.75;
 
-        this.tilesContainer = this.add.container(0, 0);
+        this.g_tilesContainer = this.add.container(0, 0);
 
         this.spawnWaypoints();
         this.spawnBoy();
@@ -112,11 +112,11 @@ export class MainScene extends Phaser.Scene implements GM {
         this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
             const cellPos = this.getCellPosition(pointer.x, pointer.y);
             if (!activeWaypoint) {
-                if (this.waypointMatrix[cellPos.x][cellPos.y] != null) {
-                    activeWaypoint = this.waypointMatrix[cellPos.x][cellPos.y];
-                    this.waypointMatrix[cellPos.x][cellPos.y] = null;
+                if (this.g_waypointMatrix[cellPos.x][cellPos.y] != null) {
+                    activeWaypoint = this.g_waypointMatrix[cellPos.x][cellPos.y];
+                    this.g_waypointMatrix[cellPos.x][cellPos.y] = null;
                 } else {
-                    activeWaypoint = this.add.existing(new Waypoint(this, this.waypointList.length, cellPos.x, cellPos.y)) as Waypoint;
+                    activeWaypoint = this.add.existing(new Waypoint(this, this.g_waypointList.length, cellPos.x, cellPos.y)) as Waypoint;
                 }
             }
         });
@@ -127,9 +127,9 @@ export class MainScene extends Phaser.Scene implements GM {
             }
         });
         this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
-            if (this.waypointMatrix[activeWaypoint.cellX][activeWaypoint.cellY] == null) {
-                this.waypointMatrix[activeWaypoint.cellX][activeWaypoint.cellY] = activeWaypoint;
-                if (this.waypointList.indexOf(activeWaypoint) < 0) this.waypointList.push(activeWaypoint);
+            if (this.g_waypointMatrix[activeWaypoint.cellX][activeWaypoint.cellY] == null) {
+                this.g_waypointMatrix[activeWaypoint.cellX][activeWaypoint.cellY] = activeWaypoint;
+                if (this.g_waypointList.indexOf(activeWaypoint) < 0) this.g_waypointList.push(activeWaypoint);
                 this.printWaypoints();
                 activeWaypoint = null;
             }
@@ -144,30 +144,30 @@ export class MainScene extends Phaser.Scene implements GM {
     }
 
     private printWaypoints() {
-        console.log(`Waypoints(${this.waypointMatrix.length},${this.waypointMatrix[0].length})`
-            + `\n${transpose(this.waypointMatrix).map(row => row.map(item => (!item ? '_' : item.toString()).padEnd(4, ' ')).join(' ')).join('\n')}`
+        console.log(`Waypoints(${this.g_waypointMatrix.length},${this.g_waypointMatrix[0].length})`
+            + `\n${transpose(this.g_waypointMatrix).map(row => row.map(item => (!item ? '_' : item.toString()).padEnd(4, ' ')).join(' ')).join('\n')}`
             + ``);
     }
 
     private packWaypoints(indentCount: integer) {
-        const ymlString = (this.waypointList
+        const ymlString = (this.g_waypointList
             .sort((a, b) => a.id - b.id)
             .map(waypoint => waypoint.toYaml())
             .map(indent(indentCount, '  '))
             .join('\n')
         );
-        console.log(`Waypoints(${this.waypointList.length})`
+        console.log(`Waypoints(${this.g_waypointList.length})`
             + `\n${ymlString}`
             + ``);
     }
 
     public addWaypoint(id: number, cellX: number, cellY: number, connects: number[] = []): this {
-        if (this.waypointMatrix[cellX][cellY] == null) {
+        if (this.g_waypointMatrix[cellX][cellY] == null) {
             const activeWaypoint = this.add.existing(new Waypoint(this, id, cellX, cellY, connects)) as Waypoint;
-            this.waypointMatrix[activeWaypoint.cellX][activeWaypoint.cellY] = activeWaypoint;
+            this.g_waypointMatrix[activeWaypoint.cellX][activeWaypoint.cellY] = activeWaypoint;
 
-            if (this.waypointList.length < id + 1) this.waypointList.length = id + 1;
-            this.waypointList[id] = activeWaypoint;
+            if (this.g_waypointList.length < id + 1) this.g_waypointList.length = id + 1;
+            this.g_waypointList[id] = activeWaypoint;
 
             this.printWaypoints();
             return this;
@@ -186,13 +186,13 @@ export class MainScene extends Phaser.Scene implements GM {
             this.addWaypoint(id, cellX, cellY, connects);
         });
 
-        this.waypointList.forEach(w => w.updateConnectionsDebug(this.waypointList));
+        this.g_waypointList.forEach(w => w.updateConnectionsDebug(this.g_waypointList));
     }
 
     public spawnBoy() {
         const configBoy = config.boy;
         const cellID = configBoy.startCellID;
-        const cell = this.waypointList[cellID];
+        const cell = this.g_waypointList[cellID];
         if (!cell) throw 'cell not found. id=' + cellID;
         this.boy = new Boy(this, cell.cellX, cell.cellY);
         this.add.existing(this.boy);
