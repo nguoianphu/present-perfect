@@ -1,12 +1,10 @@
-# Extra Laser
-> Extra parts, Extra Credit
+# Present PERFECT!
+> Deliver a present at the perfect time and perfect place! Can you route the best path?
 
 # How to play
 
-1. go to https://vicksonzero.itch.io/extra-laser
-2. use Touch / Mouse / WASD
-3. Try to survive
-4. Build your ship by collecting parts
+Go to http://dickson.md/lab/present-perfect/
+Come back later
 
 # How to use code
 
