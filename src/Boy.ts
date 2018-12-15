@@ -19,10 +19,11 @@ export class Boy extends Phaser.GameObjects.Container {
 
     public scene: MainScene;
     public speed: number = 10;
+    private movementTween: Phaser.Tweens.Tween;
 
     constructor(scene: Phaser.Scene, cellX: number, cellY: number, children: GameObject[] = []) {
         super(scene, cellX, cellY);
-        
+
         this.wayPoints = [this.scene.g_waypointMatrix[cellX][cellY].id];
         this.setCellPosition(cellX, cellY);
 
@@ -59,13 +60,35 @@ export class Boy extends Phaser.GameObjects.Container {
         return this;
     }
 
+    setWaypointAndMove(waypointID: number): this {
+        console.log('setWaypointAndMove', waypointID, this.wayPoints);
+        
+        let posID;
+        if(this.isMoving){
+            this.wayPoints = [this.wayPoints[0], this.wayPoints[1]];
+            posID = this.wayPoints[1];
+        }else{
+            this.wayPoints = [this.wayPoints[0]];
+            posID = this.wayPoints[0];
+        }
+        const route = this.scene.getWaypoints(posID, waypointID).route;
+        this.pushWaypoints(route);
+        this.tryStartMoving();
+        return this;
+    }
+
     pushWaypoints(waypointIDs: number[]): this {
         this.wayPoints = this.wayPoints.concat(waypointIDs);
+        console.log('pushWaypoints', this.wayPoints);
+        
         return this;
     }
 
     tryStartMoving() {
-        if (this.isMoving) throw 'Boy is already moving';
+        if (this.isMoving) {
+            console.warn('Boy is already moving');
+            return;
+        }
 
         if (this.wayPoints.length > 1) {
             this.moveToWaypoint(this.scene.g_waypointList[this.wayPoints[0]], this.scene.g_waypointList[this.wayPoints[1]]);
@@ -73,7 +96,8 @@ export class Boy extends Phaser.GameObjects.Container {
     }
 
     moveToWaypoint(fromWaypoint: Waypoint, toWaypoint: Waypoint): this {
-        this.scene.tweens.add({
+
+        this.movementTween = this.scene.tweens.add({
             targets: this,
             x: toWaypoint.x,
             y: toWaypoint.y,
@@ -90,7 +114,9 @@ export class Boy extends Phaser.GameObjects.Container {
         const toWaypoint = this.scene.g_waypointList[to];
         this.setCellPosition(toWaypoint.cellX, toWaypoint.cellY);
         this.isMoving = false;
+        
         this.wayPoints.shift();
+        console.log('onWaypointArrived', this.wayPoints);
         if (this.wayPoints.length > 1) {
             this.moveToWaypoint(this.scene.g_waypointList[this.wayPoints[0]], this.scene.g_waypointList[this.wayPoints[1]]);
         }

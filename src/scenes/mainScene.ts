@@ -302,8 +302,7 @@ class BoyDebugTool implements Tool {
         const boyPosID = scene.g_waypointMatrix[scene.boy.cellX][scene.boy.cellY].id;
         const wayPoint = scene.g_waypointMatrix[cellPos.x][cellPos.y];
         if (wayPoint != null) {
-            scene.boy.pushWaypoints(scene.getWaypoints(boyPosID, wayPoint.id).route);
-            scene.boy.tryStartMoving();
+            scene.boy.setWaypointAndMove(wayPoint.id);
         }
     }
 }
