@@ -245,7 +245,7 @@ export class MainScene extends Phaser.Scene implements GM {
         g_group.removeAll(true);
         const g_line = new Phaser.GameObjects.Graphics(this, {
             x: config.cellWidth / 2,
-            y: config.cellHeight / 2 ,
+            y: config.cellHeight / 2,
             fillStyle: { color, alpha: 1 },
             lineStyle: { width: 10, color, alpha: 1 },
         });
@@ -309,6 +309,11 @@ export class MainScene extends Phaser.Scene implements GM {
         this.add.existing(this.girl);
     }
 
+    public changeToolTo(name: string) {
+        if(name === 'UseItemTool'){
+            this.currentTool = new UseItemTool;
+        }
+    }
 }
 
 interface Tool {
@@ -368,6 +373,14 @@ class BoyDebugTool implements Tool {
 
 
 class EmptyTool implements Tool {
+    activeWaypoint: Waypoint = null;
+
+    pointerdown(scene: MainScene, pointer: Phaser.Input.Pointer) { }
+    pointermove(scene: MainScene, pointer: Phaser.Input.Pointer) { }
+    pointerup(scene: MainScene, pointer: Phaser.Input.Pointer) { }
+}
+
+class UseItemTool implements Tool {
     activeWaypoint: Waypoint = null;
 
     pointerdown(scene: MainScene, pointer: Phaser.Input.Pointer) { }
