@@ -1,4 +1,6 @@
 config:
+  cellOffsetX: 10
+  cellOffsetY: 40
   cellWidth: 100
   cellHeight: 100
   cellCountW: 19
@@ -7,10 +9,16 @@ config:
   boy:
     startCellID: 0
     speed: 1
+  
+  girl:
+    startCellID: 15
+    speed: 1
 
   debug:
+    tool: BoyDebugTool # none WaypointTool BoyDebugTool
     showWaypoint: true
-    showBoyFoot: true
+    showBoyFoot: false
+    showGirlFoot: false
 
   level:
     waypoints:
@@ -42,31 +50,31 @@ config:
         cellY: 1
         connects: [1]
       - id: 1
-        cellX: 3
+        cellX: 2
         cellY: 1
         connects: [0, 2, 3]
       - id: 2
-        cellX: 6
+        cellX: 7
         cellY: 1
         connects: [1, 4]
       - id: 3
-        cellX: 3
+        cellX: 2
         cellY: 3
         connects: [1, 4, 5]
       - id: 4
-        cellX: 6
+        cellX: 7
         cellY: 3
         connects: [2, 3, 7, 21]
       - id: 5
-        cellX: 3
+        cellX: 2
         cellY: 6
         connects: [3, 6, 8, 10]
       - id: 6
-        cellX: 6
+        cellX: 7
         cellY: 6
         connects: [5, 7]
       - id: 7
-        cellX: 6
+        cellX: 7
         cellY: 5
         connects: [4, 6, 20]
       - id: 8
@@ -78,19 +86,19 @@ config:
         cellY: 9
         connects: [8, 10]
       - id: 10
-        cellX: 3
+        cellX: 2
         cellY: 9
         connects: [5, 9, 11]
       - id: 11
-        cellX: 6
+        cellX: 7
         cellY: 9
         connects: [10, 12, 13]
       - id: 12
-        cellX: 6
+        cellX: 7
         cellY: 8
         connects: [11, 25]
       - id: 13
-        cellX: 10
+        cellX: 11
         cellY: 9
         connects: [11, 14, 18]
       - id: 14
@@ -110,34 +118,34 @@ config:
         cellY: 0
         connects: [16, 24]
       - id: 18
-        cellX: 10
+        cellX: 11
         cellY: 6
         connects: [13, 15, 19, 25]
       - id: 19
-        cellX: 10
+        cellX: 11
         cellY: 4
         connects: [16, 18, 20]
       - id: 20
-        cellX: 7
+        cellX: 9
         cellY: 4
         connects: [7, 19]
       - id: 21
-        cellX: 7
+        cellX: 9
         cellY: 2
         connects: [4, 22]
       - id: 22
-        cellX: 12
+        cellX: 13
         cellY: 2
         connects: [21, 23]
       - id: 23
-        cellX: 12
+        cellX: 13
         cellY: 1
         connects: [22, 24]
       - id: 24
-        cellX: 16
+        cellX: 15
         cellY: 1
         connects: [17, 23]
       - id: 25
-        cellX: 8
+        cellX: 9
         cellY: 8
         connects: [12, 18]

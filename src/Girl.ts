@@ -6,12 +6,12 @@ import { config } from './config';
 import { Waypoint } from './Waypoint';
 import { MainScene } from './scenes/mainScene';
 
-export class Boy extends Phaser.GameObjects.Container {
+export class Girl extends Phaser.GameObjects.Container {
     public cellX: number;
     public cellY: number;
 
-    private g_boyGraphic: Phaser.GameObjects.Image;
-    private g_boyFoot: BoyFoot;
+    private g_girlGraphic: Phaser.GameObjects.Image;
+    private g_girlFoot: GirlFoot;
     private g_debugText: Phaser.GameObjects.Text;
 
     public wayPoints: number[] = [];
@@ -29,16 +29,16 @@ export class Boy extends Phaser.GameObjects.Container {
 
         this.isMoving = false;
 
-        this.g_boyGraphic = new Phaser.GameObjects.Image(scene, config.cellWidth / 2, config.cellHeight / 2, 'boy');
-        this.g_boyGraphic.setOrigin(0.5, 0.9);
-        this.add(this.g_boyGraphic);
+        this.g_girlGraphic = new Phaser.GameObjects.Image(scene, config.cellWidth / 2, config.cellHeight / 2, 'girl');
+        this.g_girlGraphic.setOrigin(0.5, 0.9);
+        this.add(this.g_girlGraphic);
 
-        this.g_boyFoot = new BoyFoot(scene, config.cellWidth / 2, config.cellHeight / 2);
-        this.g_boyFoot.setVisible(config.debug.showBoyFoot);
-        this.add(this.g_boyFoot);
+        this.g_girlFoot = new GirlFoot(scene, config.cellWidth / 2, config.cellHeight / 2);
+        this.g_girlFoot.setVisible(config.debug.showGirlFoot);
+        this.add(this.g_girlFoot);
 
         this.g_debugText = new Phaser.GameObjects.Text(scene, config.cellWidth / 2, config.cellHeight / 2, '', defaultTextStyle)
-        this.g_debugText.setVisible(config.debug.showBoyFoot);
+        this.g_debugText.setVisible(config.debug.showGirlFoot);
         this.add(this.g_debugText);
         // this.add(children);
     }
@@ -77,7 +77,7 @@ export class Boy extends Phaser.GameObjects.Container {
 
     tryStartMoving() {
         if (this.isMoving) {
-            console.warn('Boy is already moving');
+            console.warn('Girl is already moving');
             return;
         }
 
@@ -87,11 +87,11 @@ export class Boy extends Phaser.GameObjects.Container {
     }
 
     moveToWaypoint(fromWaypoint: Waypoint, toWaypoint: Waypoint): this {
-        const duration = fromWaypoint.distanceMap[toWaypoint.id].dist * 1000 / config.boy.speed;
+        const duration = fromWaypoint.distanceMap[toWaypoint.id].dist * 1000 / config.girl.speed;
 
         const swing = 2.5;
         const hop = 10
-        this.g_boyGraphic.setAngle(-swing);
+        this.g_girlGraphic.setAngle(-swing);
         this.movementTween = this.scene.tweens.timeline({
             duration,
             tweens: [
@@ -102,7 +102,7 @@ export class Boy extends Phaser.GameObjects.Container {
                     offset: 0,
                 },
                 {
-                    targets: this.g_boyGraphic,
+                    targets: this.g_girlGraphic,
                     y: config.cellHeight / 2 - hop,
                     yoyo: true,
                     duration: 100,
@@ -110,7 +110,7 @@ export class Boy extends Phaser.GameObjects.Container {
                     offset: 0,
                 },
                 {
-                    targets: this.g_boyGraphic,
+                    targets: this.g_girlGraphic,
                     angle: swing,
                     yoyo: true,
                     duration: 100,
@@ -119,7 +119,7 @@ export class Boy extends Phaser.GameObjects.Container {
                 },
             ],
             onComplete: () => {
-                this.g_boyGraphic.setAngle(0);
+                this.g_girlGraphic.setAngle(0);
                 this.onWaypointArrived(fromWaypoint.id, toWaypoint.id);
             },
         });
@@ -152,13 +152,13 @@ export class Boy extends Phaser.GameObjects.Container {
     }
 
     toString() {
-        return `Boy ${this.cellX},${this.cellY}`;
+        return `Girl ${this.cellX},${this.cellY}`;
     }
 }
 
 
 
-export class BoyFoot extends Phaser.GameObjects.Graphics {
+export class GirlFoot extends Phaser.GameObjects.Graphics {
     fillRoundedRect: (x: number, y: number, w: number, h: number, r: number | { tl: number, tr: number, bl: number, br: number }) => this;
     strokeRoundedRect: (x: number, y: number, w: number, h: number, r: number | { tl: number, tr: number, bl: number, br: number }) => this;
 

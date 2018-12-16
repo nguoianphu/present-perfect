@@ -8,6 +8,7 @@ import { config } from '../config';
 import { GM } from '../GM';
 import { Waypoint } from '../Waypoint';
 import { Boy } from '../Boy';
+import { Girl } from '../Girl';
 
 type Pointer = Phaser.Input.Pointer;
 type Scene = Phaser.Scene;
@@ -29,32 +30,55 @@ export class MainScene extends Phaser.Scene implements GM {
     public currentTool: Tool = null;
 
     private g_bg: Phaser.GameObjects.Image;
+    private g_buildings: Phaser.GameObjects.Image;
+
     private g_tilesGroup: Phaser.GameObjects.Group;
 
     public g_waypointMatrix: Waypoint[][] = new Array(config.cellCountW).fill(1).map(_ => new Array(config.cellCountH));
     public g_waypointList: Waypoint[] = [];
 
     public boy: Boy;
+    public girl: Girl;
 
     constructor() {
         super({
             key: "MainScene"
         });
 
-        // this.currentTool = new WaypointTool();
-        this.currentTool = new BoyDebugTool();
+        if (config.debug.tool === 'WaypointTool') {
+            this.currentTool = new WaypointTool();
+        } else if (config.debug.tool === 'BoyDebugTool') {
+            this.currentTool = new BoyDebugTool();
+        } else {
+            this.currentTool = new EmptyTool();
+        }
     }
 
     preload(): void {
-        this.load.image('bg', './assets/publicDomain/paper_texture_cells_light_55327_1280x720.jpg');
+        // this.load.image('bg', './assets/publicDomain/paper_texture_cells_light_55327_1280x720.jpg');
+        this.load.baseURL = './assets/brianTW/';
+        this.load.image('base', 'base.png');
+        this.load.image('boy', 'boy.png');
+        this.load.image('building', 'building.png');
 
+        this.load.image('event_A', 'event_A.png');
+        this.load.image('event_B', 'event_B.png');
+        this.load.image('event_bone', 'event_bone.png');
+        this.load.image('event_C', 'event_C.png');
+        this.load.image('girl', 'girl.png');
+        this.load.image('item_A', 'item_A.png');
+        this.load.image('item_B', 'item_B.png');
+        this.load.image('item_bone', 'item_bone.png');
+        this.load.image('item_C', 'item_C.png');
     }
 
     create(): void {
         (<any>window).scene = this;
 
-        this.g_bg = this.add.image(0, 0, 'bg')
-            .setScale(1920 / 1280 * 2, 1080 / 720 * 2)
+        this.g_bg = this.add.image(0, 0, 'base')
+            // .setScale(1920 / 1280 * 2, 1080 / 720 * 2)
+            // .setScale(1920 / 1280 * 2, 1080 / 720 * 2)
+            .setOrigin(0)
             ;
 
         const padding = 4;
@@ -64,9 +88,22 @@ export class MainScene extends Phaser.Scene implements GM {
         this.g_tilesContainer = this.add.container(0, 0);
 
         this.spawnWaypoints();
+
+
+        this.g_buildings = this.add.image(0, 0, 'building')
+            // .setScale(1920 / 1280 * 2, 1080 / 720 * 2)
+            // .setScale(1920 / 1280 * 2, 1080 / 720 * 2)
+            .setOrigin(0)
+            ;
+
+        this.spawnGirl();
         this.spawnBoy();
 
+
         this.registerMouse();
+
+        this.boy.wander();
+        this.girl.wander();
     }
 
     update(time: number, delta: number): void {
@@ -108,8 +145,8 @@ export class MainScene extends Phaser.Scene implements GM {
 
     getCellPosition(x: number, y: number) {
         return new Phaser.Math.Vector2(
-            Phaser.Math.Clamp(Math.floor(x / config.cellWidth), 0, config.cellCountW - 1),
-            Phaser.Math.Clamp(Math.floor(y / config.cellHeight), 0, config.cellCountH - 1),
+            Phaser.Math.Clamp(Math.floor((x - config.cellOffsetX) / config.cellWidth), 0, config.cellCountW - 1),
+            Phaser.Math.Clamp(Math.floor((y - config.cellOffsetY) / config.cellHeight), 0, config.cellCountH - 1),
         )
     }
 
@@ -182,11 +219,9 @@ export class MainScene extends Phaser.Scene implements GM {
             w.updateConnectionsDebug(this.g_waypointList);
         });
 
-        setTimeout(() => {
-            this.g_waypointList.forEach(w => {
-                w.updateShortestPathTree(this.g_waypointList);
-            });
-        }, 1000);
+        this.g_waypointList.forEach(w => {
+            w.updateShortestPathTree(this.g_waypointList);
+        });
     }
 
     public getWaypoints(from: number, to: number) {
@@ -250,6 +285,15 @@ export class MainScene extends Phaser.Scene implements GM {
         this.boy = new Boy(this, cell.cellX, cell.cellY);
         this.add.existing(this.boy);
     }
+
+    public spawnGirl() {
+        const configGirl = config.girl;
+        const cellID = configGirl.startCellID;
+        const cell = this.g_waypointList[cellID];
+        if (!cell) throw 'cell not found. id=' + cellID;
+        this.girl = new Girl(this, cell.cellX, cell.cellY);
+        this.add.existing(this.girl);
+    }
 }
 
 interface Tool {
@@ -305,4 +349,13 @@ class BoyDebugTool implements Tool {
             scene.boy.setWaypointAndMove(wayPoint.id);
         }
     }
+}
+
+
+class EmptyTool implements Tool {
+    activeWaypoint: Waypoint = null;
+
+    pointerdown(scene: MainScene, pointer: Phaser.Input.Pointer) { }
+    pointermove(scene: MainScene, pointer: Phaser.Input.Pointer) { }
+    pointerup(scene: MainScene, pointer: Phaser.Input.Pointer) { }
 }

@@ -8,8 +8,8 @@ import { config as configFile } from './config';
 
 // main game configuration
 const config: GameConfig = {
-    width: configFile.cellWidth * configFile.cellCountW,
-    height: configFile.cellHeight * configFile.cellCountH,
+    width: 1920,
+    height: 1080,
     disableContextMenu: true,
     type: Phaser.AUTO,
     parent: "game",

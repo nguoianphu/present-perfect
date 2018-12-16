@@ -32,8 +32,8 @@ export class Waypoint extends Phaser.GameObjects.Container {
         this.connectsList = connects;
         this.debugColor = (<Phaser.Display.Color>(<any>new Phaser.Display.Color()).random()).color;
 
-        this.x = cellX * config.cellWidth;
-        this.y = cellY * config.cellHeight;
+        this.x = cellX * config.cellWidth + config.cellOffsetX;
+        this.y = cellY * config.cellHeight + config.cellOffsetY;
 
         this.g_connectorGroup = new Phaser.GameObjects.Container(scene, 0, 0);
         this.add(this.g_connectorGroup);
@@ -47,8 +47,8 @@ export class Waypoint extends Phaser.GameObjects.Container {
     setCellPosition(cellX: number, cellY: number): this {
         this.cellX = cellX;
         this.cellY = cellY;
-        this.x = cellX * config.cellWidth;
-        this.y = cellY * config.cellHeight;
+        this.x = cellX * config.cellWidth + config.cellOffsetX;
+        this.y = cellY * config.cellHeight + config.cellOffsetY;
         return this;
     }
 
