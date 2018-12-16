@@ -15,6 +15,7 @@ import { config } from './config';
 
 export class Waypoint extends Phaser.GameObjects.Container {
     public id: integer;
+    public name: string = '';
     public cellX: number;
     public cellY: number;
     public connectsList: number[] = [];
@@ -22,11 +23,13 @@ export class Waypoint extends Phaser.GameObjects.Container {
     public debugColor: number; // color hex number
     public distanceMap: DistanceMap = {};
     public routingTable: RoutingTable = {};
+    g_name: Phaser.GameObjects.Text;
 
 
-    constructor(scene: Phaser.Scene, id: integer, cellX: number, cellY: number, connects: number[] = [], children: GameObject[] = []) {
+    constructor(scene: Phaser.Scene, id: integer, name: string, cellX: number, cellY: number, connects: number[] = [], children: GameObject[] = []) {
         super(scene, cellX, cellY);
         this.id = id;
+        this.name = name;
         this.cellX = cellX;
         this.cellY = cellY;
         this.connectsList = connects;
@@ -38,10 +41,30 @@ export class Waypoint extends Phaser.GameObjects.Container {
         this.g_connectorGroup = new Phaser.GameObjects.Container(scene, 0, 0);
         this.add(this.g_connectorGroup);
 
-        this.add(new WaypointGraphics(scene, this.debugColor, config.cellWidth / 2, config.cellHeight / 2));
-        this.add(new Phaser.GameObjects.Text(scene, config.cellWidth / 2, config.cellHeight / 2, '' + this.id, defaultTextStyle));
-        // this.add(children);
-        this.setVisible(config.debug.showWaypoint);
+        if (config.debug.showWaypoint) {
+            this.add(new WaypointGraphics(scene, this.debugColor, config.cellWidth / 2, config.cellHeight / 2));
+            this.add(new Phaser.GameObjects.Text(scene, config.cellWidth / 2, config.cellHeight / 2, '' + this.id, {
+                ...defaultTextStyle,
+                color: 'magenta',
+                // color: Phaser.Display.Color.ValueToColor(this.debugColor).rgba,
+            }));
+        }// this.add(children);
+
+        if (config.debug.showNamedWaypoint && this.name != '') {
+            this.add(new NamedWaypointGraphics(scene, this.debugColor, config.cellWidth / 2, config.cellHeight / 2));
+            this.g_name = (new Phaser.GameObjects.Text(scene, config.cellWidth / 2, config.cellHeight / 2, '' + this.name, {
+                ...defaultTextStyle,
+                textAlign: 'center',
+                color: 'black',
+                fontSize: 36,
+                backgroundColor: 'rgba(255,255,255,0.8)',
+                // color: Phaser.Display.Color.ValueToColor(this.debugColor).rgba,
+            })
+                // .setOrigin(1, 0.5)
+                .setAngle(20)
+            );
+            this.add(this.g_name);
+        }
     }
 
     setCellPosition(cellX: number, cellY: number): this {
@@ -59,6 +82,7 @@ export class Waypoint extends Phaser.GameObjects.Container {
 
     toYaml() {
         return (`- id: ${this.id}`
+            + (this.name === '' ? '' : `\n  name: ${this.name}`)
             + `\n  cellX: ${this.cellX}`
             + `\n  cellY: ${this.cellY}`
             + `\n  connects: [${this.connectsList.sort(compareNumber).join(', ')}]`
@@ -67,6 +91,9 @@ export class Waypoint extends Phaser.GameObjects.Container {
 
     updateConnectionsDebug(g_waypointList: Waypoint[]) {
         this.g_connectorGroup.removeAll(true);
+
+        if (!config.debug.showWaypoint) return;
+
         this.connectsList.forEach(neighbourID => {
             const neighbour = g_waypointList[neighbourID];
             const g_line = new Phaser.GameObjects.Graphics(this.scene, {
@@ -86,6 +113,7 @@ export class Waypoint extends Phaser.GameObjects.Container {
                 '' + this.distanceMap[neighbourID].dist.toFixed(2),
                 {
                     ...defaultTextStyle,
+                    fontSize: 24,
                     color: 'red',
                 }
             );
@@ -208,6 +236,38 @@ export class WaypointGraphics extends Phaser.GameObjects.Graphics {
         // const color = (<Phaser.Display.Color>(<any>new Phaser.Display.Color()).random()).color;
         // this.fillStyle(color, 1);
         this.fillCircle(0, 0, 10);
+    }
+}
+
+
+
+
+export class NamedWaypointGraphics extends Phaser.GameObjects.Graphics {
+    fillRoundedRect: (x: number, y: number, w: number, h: number, r: number | { tl: number, tr: number, bl: number, br: number }) => this;
+    strokeRoundedRect: (x: number, y: number, w: number, h: number, r: number | { tl: number, tr: number, bl: number, br: number }) => this;
+
+    w: number; h: number;
+    debugColor: number;
+
+    constructor(scene: Phaser.Scene, debugColor: number, x: number, y: number) {
+        super(scene, {
+            x, y,
+            fillStyle: { color: debugColor, alpha: 1 },
+            lineStyle: { width: 5, color: debugColor, alpha: 1 },
+        });
+        this.debugColor = debugColor;
+
+        this.drawDot()
+
+        // this.setInteractive(new Phaser.Geom.Rectangle(0, 0, w, h), Phaser.Geom.Rectangle.Contains);
+    }
+
+    drawDot() {
+        this.clear();
+
+        // const color = (<Phaser.Display.Color>(<any>new Phaser.Display.Color()).random()).color;
+        // this.fillStyle(color, 1);
+        this.strokeCircle(0, 0, 15);
     }
 }
 

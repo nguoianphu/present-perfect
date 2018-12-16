@@ -14,6 +14,7 @@ export type IConfig = {
 
 export interface Debug {
     showWaypoint: boolean;
+    showNamedWaypoint: boolean;
     showBoyFoot: boolean;
     showGirlFoot: boolean;
     tool: 'none' | 'WaypointTool' | 'BoyDebugTool';
@@ -33,6 +34,7 @@ export interface Level {
 
 export interface Waypoint {
     id: integer;
+    name?: string;
     cellX: integer;
     cellY: integer;
     connects: integer[];
@@ -42,4 +44,5 @@ export interface Waypoint {
 
 const c = require('json-loader!yaml-loader!./config.yml');
 
+(<any>window).config = c.config;
 export const config = c.config as IConfig;

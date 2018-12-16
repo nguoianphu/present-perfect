@@ -10,19 +10,22 @@ export class Girl extends Phaser.GameObjects.Container {
     public cellX: number;
     public cellY: number;
 
+    private g_predictGroup: Phaser.GameObjects.Container;
     private g_girlGraphic: Phaser.GameObjects.Image;
     private g_girlFoot: GirlFoot;
     private g_debugText: Phaser.GameObjects.Text;
 
     public wayPoints: number[] = [];
     public isMoving: boolean;
+    public predictColor = 0xFF69B4;
 
     public scene: MainScene;
     private movementTween: Phaser.Tweens.Timeline;
 
-    constructor(scene: Phaser.Scene, cellX: number, cellY: number, children: GameObject[] = []) {
+    constructor(scene: Phaser.Scene, cellX: number, cellY: number, g_predictGroup: Phaser.GameObjects.Container, children: GameObject[] = []) {
         super(scene, cellX, cellY);
 
+        this.g_predictGroup = g_predictGroup;
         this.wayPoints = [this.scene.g_waypointMatrix[cellX][cellY].id];
         this.setCellPosition(cellX, cellY);
 
@@ -30,7 +33,7 @@ export class Girl extends Phaser.GameObjects.Container {
         this.isMoving = false;
 
         this.g_girlGraphic = new Phaser.GameObjects.Image(scene, config.cellWidth / 2, config.cellHeight / 2, 'girl');
-        this.g_girlGraphic.setOrigin(0.5, 0.9);
+        this.g_girlGraphic.setOrigin(0.5, 0.94);
         this.add(this.g_girlGraphic);
 
         this.g_girlFoot = new GirlFoot(scene, config.cellWidth / 2, config.cellHeight / 2);
@@ -62,7 +65,7 @@ export class Girl extends Phaser.GameObjects.Container {
             this.wayPoints = [this.wayPoints[0]];
             posID = this.wayPoints[0];
         }
-        const route = this.scene.getWaypoints(posID, waypointID).route;
+        const { route, totalDist } = this.scene.getWaypoints(posID, waypointID);
         this.pushWaypoints(route);
         this.tryStartMoving();
         return this;
@@ -83,6 +86,7 @@ export class Girl extends Phaser.GameObjects.Container {
 
         if (this.wayPoints.length > 1) {
             this.moveToWaypoint(this.scene.g_waypointList[this.wayPoints[0]], this.scene.g_waypointList[this.wayPoints[1]]);
+            this.scene.drawWaypoints(this.wayPoints.slice(), null, this.predictColor, this.g_predictGroup);
         }
     }
 
@@ -134,6 +138,7 @@ export class Girl extends Phaser.GameObjects.Container {
 
         this.wayPoints.shift();
         // console.log('onWaypointArrived', this.wayPoints);
+        this.scene.drawWaypoints(this.wayPoints.slice(), null, this.predictColor, this.g_predictGroup);
         if (this.wayPoints.length > 1) {
             this.moveToWaypoint(this.scene.g_waypointList[this.wayPoints[0]], this.scene.g_waypointList[this.wayPoints[1]]);
         } else {
@@ -147,7 +152,7 @@ export class Girl extends Phaser.GameObjects.Container {
     }
 
     wander() {
-        const waypoint = Phaser.Math.RND.pick(this.scene.g_waypointList);
+        const waypoint = Phaser.Math.RND.pick(this.scene.g_namedWaypointList);
         this.setWaypointAndMove(waypoint.id);
     }
 

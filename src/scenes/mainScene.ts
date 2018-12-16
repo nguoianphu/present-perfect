@@ -36,9 +36,12 @@ export class MainScene extends Phaser.Scene implements GM {
 
     public g_waypointMatrix: Waypoint[][] = new Array(config.cellCountW).fill(1).map(_ => new Array(config.cellCountH));
     public g_waypointList: Waypoint[] = [];
+    public g_namedWaypointList: Waypoint[] = [];
 
     public boy: Boy;
+    public boyPredict: Phaser.GameObjects.Container;
     public girl: Girl;
+    public girlPredict: Phaser.GameObjects.Container;
 
     constructor() {
         super({
@@ -87,15 +90,16 @@ export class MainScene extends Phaser.Scene implements GM {
 
         this.g_tilesContainer = this.add.container(0, 0);
 
-        this.spawnWaypoints();
-
-
         this.g_buildings = this.add.image(0, 0, 'building')
             // .setScale(1920 / 1280 * 2, 1080 / 720 * 2)
             // .setScale(1920 / 1280 * 2, 1080 / 720 * 2)
             .setOrigin(0)
             ;
+        this.spawnWaypoints();
 
+
+        this.boyPredict = this.add.container(0, 0);
+        this.girlPredict = this.add.container(0, 0);
         this.spawnGirl();
         this.spawnBoy();
 
@@ -188,9 +192,9 @@ export class MainScene extends Phaser.Scene implements GM {
             + ``);
     }
 
-    public addWaypoint(id: number, cellX: number, cellY: number, connects: number[] = []): this {
+    public addWaypoint(id: number, name: string, cellX: number, cellY: number, connects: number[] = []): this {
         if (this.g_waypointMatrix[cellX][cellY] == null) {
-            const activeWaypoint = this.add.existing(new Waypoint(this, id, cellX, cellY, connects)) as Waypoint;
+            const activeWaypoint = this.add.existing(new Waypoint(this, id, name, cellX, cellY, connects)) as Waypoint;
             this.g_waypointMatrix[activeWaypoint.cellX][activeWaypoint.cellY] = activeWaypoint;
 
             if (this.g_waypointList.length < id + 1) this.g_waypointList.length = id + 1;
@@ -205,11 +209,12 @@ export class MainScene extends Phaser.Scene implements GM {
         config.level.waypoints.forEach((waypoint) => {
             const {
                 id,
+                name = '',
                 cellX,
                 cellY,
                 connects,
             } = waypoint;
-            this.addWaypoint(id, cellX, cellY, connects);
+            this.addWaypoint(id, name, cellX, cellY, connects);
         });
 
         this.printWaypoints();
@@ -218,6 +223,7 @@ export class MainScene extends Phaser.Scene implements GM {
             w.updateDistanceList(this.g_waypointList);
             w.updateConnectionsDebug(this.g_waypointList);
         });
+        this.g_namedWaypointList = this.g_waypointList.filter(w => w.name !== '');
 
         this.g_waypointList.forEach(w => {
             w.updateShortestPathTree(this.g_waypointList);
@@ -228,19 +234,19 @@ export class MainScene extends Phaser.Scene implements GM {
         return Waypoint.getWaypoints(this.g_waypointList, from, to);
     }
 
-    public drawWaypoints(from: number, to: number) {
-        const { route, totalDist } = this.getWaypoints(from, to);
+    public drawWaypoints(route: number[], totalDist: number | null, color: integer, g_group: Phaser.GameObjects.Container) {
         console.log(`hops: [${route.join(', ')}]`);
 
         let lastWaypoint = this.g_waypointList[route[0]];
-        const g_group = this.add.container(0, 0,
+        g_group.removeAll(true);
+        g_group.add(
             route.slice(1, route.length).map(waypointID => {
                 const g_waypoint = this.g_waypointList[waypointID];
                 const g_line = new Phaser.GameObjects.Graphics(this, {
                     x: lastWaypoint.x + config.cellWidth / 2,
                     y: lastWaypoint.y + config.cellHeight / 2,
-                    fillStyle: { color: 0x000000, alpha: 1 },
-                    lineStyle: { width: 10, color: 0x000000, alpha: 1 },
+                    fillStyle: { color, alpha: 1 },
+                    lineStyle: { width: 10, color, alpha: 1 },
                 });
                 let delta = new Vector2(g_waypoint.x - lastWaypoint.x, g_waypoint.y - lastWaypoint.y);
                 g_line.lineBetween(0, 0, delta.x, delta.y);
@@ -250,31 +256,33 @@ export class MainScene extends Phaser.Scene implements GM {
             })
         );
 
-        g_group.add(new Phaser.GameObjects.Text(this,
-            lastWaypoint.x, lastWaypoint.y,
-            '' + totalDist,
-            {
-                ...defaultTextStyle,
-                color: 'green'
-            }));
+        if (totalDist != null) {
+            g_group.add(new Phaser.GameObjects.Text(this,
+                lastWaypoint.x, lastWaypoint.y,
+                '' + totalDist,
+                {
+                    ...defaultTextStyle,
+                    color: 'green'
+                }));
+        }
 
-        const fromWaypoint = this.g_waypointList[from];
+        const fromWaypoint = this.g_waypointList[route[route.length - 1]];
         const g_circle = new Phaser.GameObjects.Graphics(this, {
             x: fromWaypoint.x + config.cellWidth / 2, y: fromWaypoint.y + config.cellHeight / 2,
-            fillStyle: { color: 0xfcfcf9, alpha: 1 },
-            lineStyle: { width: 5, color: 0x000000, alpha: 1 },
+            fillStyle: { color, alpha: 1 },
+            lineStyle: { width: 5, color, alpha: 1 },
         });
         g_circle.strokeCircle(0, 0, 20);
         g_group.add(g_circle);
 
-        this.tweens.add({
-            targets: g_group,
-            alpha: 0,
-            duration: 4500,
-            onComplete: () => {
-                g_group.destroy();
-            },
-        })
+        // this.tweens.add({
+        //     targets: g_group,
+        //     alpha: 0,
+        //     duration: 4500,
+        //     onComplete: () => {
+        //         g_group.destroy();
+        //     },
+        // })
     }
 
     public spawnBoy() {
@@ -282,7 +290,7 @@ export class MainScene extends Phaser.Scene implements GM {
         const cellID = configBoy.startCellID;
         const cell = this.g_waypointList[cellID];
         if (!cell) throw 'cell not found. id=' + cellID;
-        this.boy = new Boy(this, cell.cellX, cell.cellY);
+        this.boy = new Boy(this, cell.cellX, cell.cellY, this.boyPredict);
         this.add.existing(this.boy);
     }
 
@@ -291,9 +299,10 @@ export class MainScene extends Phaser.Scene implements GM {
         const cellID = configGirl.startCellID;
         const cell = this.g_waypointList[cellID];
         if (!cell) throw 'cell not found. id=' + cellID;
-        this.girl = new Girl(this, cell.cellX, cell.cellY);
+        this.girl = new Girl(this, cell.cellX, cell.cellY, this.girlPredict);
         this.add.existing(this.girl);
     }
+
 }
 
 interface Tool {
@@ -313,7 +322,7 @@ class WaypointTool implements Tool {
                 this.activeWaypoint = scene.g_waypointMatrix[cellPos.x][cellPos.y];
                 scene.g_waypointMatrix[cellPos.x][cellPos.y] = null;
             } else {
-                this.activeWaypoint = scene.add.existing(new Waypoint(scene, scene.g_waypointList.length, cellPos.x, cellPos.y)) as Waypoint;
+                this.activeWaypoint = scene.add.existing(new Waypoint(scene, scene.g_waypointList.length, '', cellPos.x, cellPos.y)) as Waypoint;
             }
         }
     }
