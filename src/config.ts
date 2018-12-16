@@ -15,6 +15,7 @@ export interface Debug {
 }
 export interface Boy {
     startCellID: integer;
+    speed: number;
 }
 
 export interface Level {

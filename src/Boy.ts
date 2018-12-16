@@ -18,7 +18,6 @@ export class Boy extends Phaser.GameObjects.Container {
     public isMoving: boolean;
 
     public scene: MainScene;
-    public speed: number = 10;
     private movementTween: Phaser.Tweens.Tween;
 
     constructor(scene: Phaser.Scene, cellX: number, cellY: number, children: GameObject[] = []) {
@@ -62,12 +61,12 @@ export class Boy extends Phaser.GameObjects.Container {
 
     setWaypointAndMove(waypointID: number): this {
         console.log('setWaypointAndMove', waypointID, this.wayPoints);
-        
+
         let posID;
-        if(this.isMoving){
+        if (this.isMoving) {
             this.wayPoints = [this.wayPoints[0], this.wayPoints[1]];
             posID = this.wayPoints[1];
-        }else{
+        } else {
             this.wayPoints = [this.wayPoints[0]];
             posID = this.wayPoints[0];
         }
@@ -80,7 +79,7 @@ export class Boy extends Phaser.GameObjects.Container {
     pushWaypoints(waypointIDs: number[]): this {
         this.wayPoints = this.wayPoints.concat(waypointIDs);
         console.log('pushWaypoints', this.wayPoints);
-        
+
         return this;
     }
 
@@ -101,7 +100,7 @@ export class Boy extends Phaser.GameObjects.Container {
             targets: this,
             x: toWaypoint.x,
             y: toWaypoint.y,
-            duration: fromWaypoint.distanceMap[toWaypoint.id].dist * 1000 / this.speed,
+            duration: fromWaypoint.distanceMap[toWaypoint.id].dist * 1000 / config.boy.speed,
             onComplete: () => {
                 this.onWaypointArrived(fromWaypoint.id, toWaypoint.id);
             },
@@ -114,7 +113,7 @@ export class Boy extends Phaser.GameObjects.Container {
         const toWaypoint = this.scene.g_waypointList[to];
         this.setCellPosition(toWaypoint.cellX, toWaypoint.cellY);
         this.isMoving = false;
-        
+
         this.wayPoints.shift();
         console.log('onWaypointArrived', this.wayPoints);
         if (this.wayPoints.length > 1) {
