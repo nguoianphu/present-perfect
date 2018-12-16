@@ -7,6 +7,7 @@ export type IConfig = {
     cellCountW: integer;
     cellCountH: integer;
     debug: Debug;
+    ui: UI;
     boy: Boy;
     girl: Girl;
     level: Level;
@@ -19,6 +20,17 @@ export interface Debug {
     showGirlFoot: boolean;
     tool: 'none' | 'WaypointTool' | 'BoyDebugTool';
 }
+export interface UI {
+    buttons: string[];
+    panelX: number;
+    panelY: number;
+
+    buttonW: number;
+    buttonH: number;
+    buttonGap: number;
+}
+
+
 export interface Boy {
     startCellID: integer;
     speed: number;

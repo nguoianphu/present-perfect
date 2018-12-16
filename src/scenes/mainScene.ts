@@ -10,6 +10,7 @@ import { GM } from '../GM';
 import { Waypoint } from '../Waypoint';
 import { Boy } from '../Boy';
 import { Girl } from '../Girl';
+import { ItemPanel } from '../ItemsPanel';
 
 type Pointer = Phaser.Input.Pointer;
 type Scene = Phaser.Scene;
@@ -72,10 +73,14 @@ export class MainScene extends Phaser.Scene implements GM {
         this.load.image('event_bone', 'event_bone.png');
         this.load.image('event_C', 'event_C.png');
         this.load.image('girl', 'girl.png');
-        this.load.image('item_A', 'item_A.png');
-        this.load.image('item_B', 'item_B.png');
+
         this.load.image('item_bone', 'item_bone.png');
-        this.load.image('item_C', 'item_C.png');
+        this.load.image('item_cat', 'item_cat.png');
+        this.load.image('item_empty', 'item_empty.png');
+        this.load.image('item_maid', 'item_maid.png');
+        this.load.image('item_man', 'item_man.png');
+        this.load.image('item_police', 'item_police.png');
+        this.load.image('item_teen', 'item_teen.png');
     }
 
     create(): void {
@@ -106,6 +111,8 @@ export class MainScene extends Phaser.Scene implements GM {
         this.girlPredict = this.add.container(0, 0);
         this.spawnGirl();
         this.spawnBoy();
+
+        this.add.existing(new ItemPanel(this, config.ui.panelX, config.ui.panelY, this.onItemButtonPressed));
 
 
         this.registerMouse();
@@ -309,9 +316,14 @@ export class MainScene extends Phaser.Scene implements GM {
         this.add.existing(this.girl);
     }
 
-    public changeToolTo(name: string) {
-        if(name === 'UseItemTool'){
-            this.currentTool = new UseItemTool;
+    public onItemButtonPressed = (itemName: string) => {
+        this.changeToolTo('UseItemTool', itemName);
+    }
+
+    public changeToolTo(name: string, ...rest: any[]) {
+        if (name === 'UseItemTool') {
+            const [itemName] = rest;
+            this.currentTool = new UseItemTool(this, itemName);
         }
     }
 }
@@ -382,8 +394,28 @@ class EmptyTool implements Tool {
 
 class UseItemTool implements Tool {
     activeWaypoint: Waypoint = null;
+    action: string;
+    scene: MainScene;
+
+    constructor(scene:MainScene, itemName: string) {
+        this.scene = scene;
+        this.action = itemName;
+        this.setUp();
+    }
+
+    setUp() {
+        log('UseItemTool setUp');
+        switch (this.action) {
+            case 'item_bone':
+                this.scene.g_waypointList
+                break;
+        }
+    }
 
     pointerdown(scene: MainScene, pointer: Phaser.Input.Pointer) { }
     pointermove(scene: MainScene, pointer: Phaser.Input.Pointer) { }
-    pointerup(scene: MainScene, pointer: Phaser.Input.Pointer) { }
+    pointerup(scene: MainScene, pointer: Phaser.Input.Pointer) {
+
+
+    }
 }

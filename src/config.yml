@@ -1,11 +1,32 @@
 config:
   cellOffsetX: 10
-  cellOffsetY: 40
+  cellOffsetY: 80
   cellWidth: 100
   cellHeight: 100
   cellCountW: 19
   cellCountH: 10
   
+  debug:
+    tool: none # none WaypointTool BoyDebugTool
+    showWaypoint: false
+    showNamedWaypoint: true
+    showBoyFoot: false
+    showGirlFoot: false
+
+  ui:
+    buttons: 
+      - item_bone
+      - item_cat
+      - item_maid
+      - item_man
+      - item_police
+      - item_teen
+    panelX: 100
+    panelY: 100
+
+    buttonW: 98
+    buttonH: 104
+    buttonGap: 4
   boy:
     startCellID: 0
     speed: 1
@@ -14,12 +35,6 @@ config:
     startCellID: 15
     speed: 0.7
 
-  debug:
-    tool: none # none WaypointTool BoyDebugTool
-    showWaypoint: false
-    showNamedWaypoint: true
-    showBoyFoot: false
-    showGirlFoot: false
 
   level:
     waypoints:
