@@ -23,6 +23,7 @@
     "yaml-loader": "^0.5.0"
   },
   "dependencies": {
+    "@types/debug": "0.0.31",
     "@types/lodash": "^4.14.116",
     "lodash": "^4.17.10",
     "phaser": "^3.15.1"

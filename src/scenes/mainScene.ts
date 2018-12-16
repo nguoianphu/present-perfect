@@ -1,4 +1,5 @@
 import { bindAll } from 'lodash';
+import * as Debug from 'debug';
 
 
 import { EventContext, defaultTextStyle, transpose, indent, compareNumber } from '../Utils';
@@ -13,6 +14,8 @@ import { Girl } from '../Girl';
 type Pointer = Phaser.Input.Pointer;
 type Scene = Phaser.Scene;
 const Vector2 = Phaser.Math.Vector2;
+
+const log = Debug('Present:MainScene');
 
 interface IMoveKeys {
     down: Phaser.Input.Keyboard.Key,
@@ -77,6 +80,7 @@ export class MainScene extends Phaser.Scene implements GM {
 
     create(): void {
         (<any>window).scene = this;
+        (<any>window).Debug = Debug;
 
         this.g_bg = this.add.image(0, 0, 'base')
             // .setScale(1920 / 1280 * 2, 1080 / 720 * 2)
@@ -175,7 +179,7 @@ export class MainScene extends Phaser.Scene implements GM {
     }
 
     public printWaypoints() {
-        console.log(`Waypoints(${this.g_waypointMatrix.length},${this.g_waypointMatrix[0].length})`
+        log(`Waypoints(${this.g_waypointMatrix.length},${this.g_waypointMatrix[0].length})`
             + `\n${transpose(this.g_waypointMatrix).map(row => row.map(item => (!item ? '_' : item.toString()).padEnd(4, ' ')).join(' ')).join('\n')}`
             + ``);
     }
@@ -187,7 +191,7 @@ export class MainScene extends Phaser.Scene implements GM {
             .map(indent(indentCount, '  '))
             .join('\n')
         );
-        console.log(`Waypoints(${this.g_waypointList.length})`
+        log(`Waypoints(${this.g_waypointList.length})`
             + `\n${ymlString}`
             + ``);
     }
@@ -235,26 +239,28 @@ export class MainScene extends Phaser.Scene implements GM {
     }
 
     public drawWaypoints(route: number[], totalDist: number | null, color: integer, g_group: Phaser.GameObjects.Container) {
-        console.log(`hops: [${route.join(', ')}]`);
+        // log(`hops: [${route.join(', ')}]`);
 
         let lastWaypoint = this.g_waypointList[route[0]];
         g_group.removeAll(true);
-        g_group.add(
-            route.slice(1, route.length).map(waypointID => {
-                const g_waypoint = this.g_waypointList[waypointID];
-                const g_line = new Phaser.GameObjects.Graphics(this, {
-                    x: lastWaypoint.x + config.cellWidth / 2,
-                    y: lastWaypoint.y + config.cellHeight / 2,
-                    fillStyle: { color, alpha: 1 },
-                    lineStyle: { width: 10, color, alpha: 1 },
-                });
-                let delta = new Vector2(g_waypoint.x - lastWaypoint.x, g_waypoint.y - lastWaypoint.y);
-                g_line.lineBetween(0, 0, delta.x, delta.y);
+        const g_line = new Phaser.GameObjects.Graphics(this, {
+            x: config.cellWidth / 2,
+            y: config.cellHeight / 2 ,
+            fillStyle: { color, alpha: 1 },
+            lineStyle: { width: 10, color, alpha: 1 },
+        });
+        g_line.beginPath();
+        g_line.moveTo(lastWaypoint.x, lastWaypoint.y);
 
-                lastWaypoint = g_waypoint;
-                return g_line;
-            })
-        );
+        route.slice(1, route.length).forEach(waypointID => {
+            const g_waypoint = this.g_waypointList[waypointID];
+            g_line.lineTo(g_waypoint.x, g_waypoint.y);
+
+            lastWaypoint = g_waypoint;
+        })
+        g_line.strokePath();
+        g_line.closePath();
+        g_group.add(g_line);
 
         if (totalDist != null) {
             g_group.add(new Phaser.GameObjects.Text(this,
@@ -351,7 +357,7 @@ class BoyDebugTool implements Tool {
     }
     pointerup(scene: MainScene, pointer: Phaser.Input.Pointer) {
         const cellPos = scene.getCellPosition(pointer.x, pointer.y);
-        console.log('pointerup', cellPos);
+        log('pointerup', cellPos);
         const boyPosID = scene.g_waypointMatrix[scene.boy.cellX][scene.boy.cellY].id;
         const wayPoint = scene.g_waypointMatrix[cellPos.x][cellPos.y];
         if (wayPoint != null) {

@@ -5,6 +5,9 @@ import { EventContext, defaultTextStyle } from './Utils';
 import { config } from './config';
 import { Waypoint } from './Waypoint';
 import { MainScene } from './scenes/mainScene';
+import * as Debug from 'debug';
+
+const log = Debug('Present:Boy');
 
 export class Boy extends Phaser.GameObjects.Container {
     public cellX: number;
@@ -56,7 +59,7 @@ export class Boy extends Phaser.GameObjects.Container {
     }
 
     setWaypointAndMove(waypointID: number): this {
-        // console.log('setWaypointAndMove', waypointID, this.wayPoints);
+        log('setWaypointAndMove', waypointID, this.wayPoints);
 
         let posID;
         if (this.isMoving) {
@@ -74,7 +77,7 @@ export class Boy extends Phaser.GameObjects.Container {
 
     pushWaypoints(waypointIDs: number[]): this {
         this.wayPoints = this.wayPoints.concat(waypointIDs);
-        // console.log('pushWaypoints', this.wayPoints);
+        log('pushWaypoints', this.wayPoints);
 
         return this;
     }
@@ -138,7 +141,7 @@ export class Boy extends Phaser.GameObjects.Container {
         this.isMoving = false;
 
         this.wayPoints.shift();
-        // console.log('onWaypointArrived', this.wayPoints);
+        log('onWaypointArrived', this.wayPoints);
         this.scene.drawWaypoints(this.wayPoints.slice(), null, this.predictColor, this.g_predictGroup);
         if (this.wayPoints.length > 1) {
             this.moveToWaypoint(this.scene.g_waypointList[this.wayPoints[0]], this.scene.g_waypointList[this.wayPoints[1]]);
@@ -153,7 +156,8 @@ export class Boy extends Phaser.GameObjects.Container {
     }
 
     wander() {
-        const waypoint = Phaser.Math.RND.pick(this.scene.g_namedWaypointList);
+        const choices = this.scene.g_namedWaypointList.slice().filter(waypoint => waypoint.id !== this.wayPoints[0]);
+        const waypoint = Phaser.Math.RND.pick(choices);
         this.setWaypointAndMove(waypoint.id);
     }
 
