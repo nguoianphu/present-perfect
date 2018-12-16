@@ -51,7 +51,6 @@ export class Waypoint extends Phaser.GameObjects.Container {
         }// this.add(children);
 
         if (config.debug.showNamedWaypoint && this.name != '') {
-            this.add(new NamedWaypointGraphics(scene, this.debugColor, config.cellWidth / 2, config.cellHeight / 2));
             this.g_name = (new Phaser.GameObjects.Text(scene, config.cellWidth / 2, config.cellHeight / 2, '' + this.name, {
                 ...defaultTextStyle,
                 textAlign: 'center',
@@ -64,6 +63,7 @@ export class Waypoint extends Phaser.GameObjects.Container {
                 .setAngle(20)
             );
             this.add(this.g_name);
+            this.add(new NamedWaypointGraphics(scene, this.debugColor, config.cellWidth / 2, config.cellHeight / 2));
         }
     }
 

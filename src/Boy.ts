@@ -108,6 +108,7 @@ export class Boy extends Phaser.GameObjects.Container {
                     x: toWaypoint.x,
                     y: toWaypoint.y,
                     offset: 0,
+                    ease: 'Linear',
                 },
                 {
                     targets: this.g_boyGraphic,
