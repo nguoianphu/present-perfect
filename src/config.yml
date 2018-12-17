@@ -7,7 +7,7 @@ config:
   cellCountH: 10
   
   debug:
-    tool: BoyDebugTool # none WaypointTool BoyDebugTool
+    tool: none # none WaypointTool BoyDebugTool
     showWaypoint: false
     showNamedWaypoint: true
     showBoyFoot: false
