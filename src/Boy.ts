@@ -94,11 +94,9 @@ export class Boy extends Phaser.GameObjects.Container {
                 let g_bus: Phaser.GameObjects.Image;
                 this.g_boyContainer.removeAll(true);
                 this.g_boyContainer.add([
-                    g_bus = new Phaser.GameObjects.Image(this.scene, 0, 0, 'event_police'),
-                    g_boy = new Phaser.GameObjects.Image(this.scene, -40, -30, 'boy'),
+                    g_bus = new Phaser.GameObjects.Image(this.scene, 0, 0, 'event_bus_left_boy'),
                 ]);
                 g_bus.setOrigin(0.5, 0.9);
-                g_boy.setOrigin(0.5, 0.5).setScale(0.9).setAngle(45);
                 break;
         }
     }
@@ -151,6 +149,9 @@ export class Boy extends Phaser.GameObjects.Container {
         let speed = config.boy.speed;
         switch (this.mode) {
             case 'police_boy':
+                speed = config.boy.mode.policeSpeed;
+                break;
+            case 'bus_boy':
                 speed = config.boy.mode.policeSpeed;
                 break;
         }
@@ -254,22 +255,35 @@ export class Boy extends Phaser.GameObjects.Container {
                 );
                 if (nearBonePos != null) {
                     log('nearBonePos has bones');
-                    this.mode = 'scared_boy';
-                    this.updateFace();
-                    this.setWaypointAndMove(this.wayPoints[0]);
-                    this.scene.time.addEvent({
-                        delay: config.boy.stayTime / 2,
-                        callback: () => {
-                            this.mode = 'none';
-                            this.updateFace();
-                            this.wander();
-                        },
-                    });
+                    this.wander();
                     return;
+                }
+                if (waypoint.name === 'bus stop 1') {
+                    this.mode = 'bus_boy';
+                    this.updateFace();
+                    const nextBusStop = this.scene.g_namedWaypointList.find(w => w.name === 'bus stop 2');
+                    this.setWaypointAndMove(nextBusStop.id);
+                }
+                if (waypoint.name === 'bus stop 2') {
+                    this.mode = 'bus_boy';
+                    this.updateFace();
+                    const nextBusStop = this.scene.g_namedWaypointList.find(w => w.name === 'bus stop 3');
+                    this.setWaypointAndMove(nextBusStop.id);
+                }
+                if (waypoint.name === 'bus stop 3') {
+                    this.mode = 'bus_boy';
+                    this.updateFace();
+                    const nextBusStop = this.scene.g_namedWaypointList.find(w => w.name === 'bus stop 1');
+                    this.setWaypointAndMove(nextBusStop.id);
                 }
                 break;
             case 'police_boy':
                 if (toWaypoint.name === 'police station') {
+                    this.mode = 'none';
+                    this.updateFace();
+                }
+            case 'bus_boy':
+                if (toWaypoint.name === 'bus stop 1' || toWaypoint.name === 'bus stop 2' || toWaypoint.name === 'bus stop 3') {
                     this.mode = 'none';
                     this.updateFace();
                 }
@@ -299,7 +313,7 @@ export class Boy extends Phaser.GameObjects.Container {
 
     wander() {
         log('wander');
-        const choices = (this.scene.g_namedWaypointList.slice()
+        let choices = (this.scene.g_namedWaypointList.slice()
             .filter(waypoint => waypoint.id !== this.wayPoints[0])
             .filter(waypoint =>
                 !(waypoint.items.map(i => i.name).includes('event_bone'))
@@ -310,17 +324,9 @@ export class Boy extends Phaser.GameObjects.Container {
             (this.scene.g_waypointList[waypointID].items.map(i => i.name).includes('event_bone'))
         );
         if (nearBonePos != null) {
-            this.mode = 'scared_boy';
-            this.updateFace();
-            this.scene.time.addEvent({
-                delay: config.boy.stayTime / 2,
-                callback: () => {
-                    this.mode = 'none';
-                    this.updateFace();
-                    this.wander();
-                },
-            });
-            return;
+            choices = this.scene.g_waypointList[this.wayPoints[0]].connectsList.filter(waypointID =>
+                !(this.scene.g_waypointList[waypointID].items.map(i => i.name).includes('event_bone'))
+            ).map(i => this.scene.g_waypointList[i]);
         }
         const waypoint = Phaser.Math.RND.pick(choices);
         this.setWaypointAndMove(waypoint.id);

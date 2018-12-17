@@ -54,6 +54,7 @@ export interface Items {
     boneDuration: number;
     policeDuration: number;
     teenDuration: number;
+    manDuration: number;
 }
 export interface Level {
     waypoints: Waypoint[]

@@ -101,6 +101,7 @@ export class MainScene extends Phaser.Scene implements GM {
         this.load.image('event_teen', 'event_teen.png');
 
 
+        this.load.image('event_bus_left_boy', 'event_bus_left_boy.png');
         this.load.image('smoke', 'smoke.png');
 
 
@@ -420,17 +421,19 @@ export class MainScene extends Phaser.Scene implements GM {
     }
 
     public gameOver() {
+        this.boy.setWaypointAndMove(this.boy.wayPoints[0]);
+        this.girl.setWaypointAndMove(this.girl.wayPoints[0]);
         const score = {
-            'Place': this.getPlaceScore() * 1,
-            'Time': this.getTimeScore() * 1,
+            'Place': this.getPlaceScore(this.boy.wayPoints[0], this.girl.wayPoints[0]) * 1,
+            'Time': this.getTimeScore(0) * 1,
         };
     }
 
-    public getPlaceScore(): number {
+    public getPlaceScore(boyWaypointID: integer, girlWaypointID: integer): number {
         return 0;
     }
 
-    public getTimeScore(): number {
+    public getTimeScore(seconds: integer): number {
         return 0;
     }
 }

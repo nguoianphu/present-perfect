@@ -2,7 +2,7 @@ import * as Debug from 'debug';
 const log = Debug('Present:Tool');
 
 import { MainScene } from "./scenes/mainScene";
-import { EventStar, EventBone, EventPolice, EventTeen, EventCat } from "./Items";
+import { EventStar, EventBone, EventPolice, EventTeen, EventCat, EventMan } from "./Items";
 import { Waypoint } from "./Waypoint";
 import { config } from "./config";
 
@@ -142,7 +142,7 @@ export class UseItemTool implements Tool {
                     .filter(waypoint => waypoint.name == '' && waypoint.items.length <= 0)
                     .map(waypoint => new EventStar(this.scene, waypoint.x + config.cellWidth / 2, waypoint.y + config.cellHeight / 2))
                 )
-                this.scene.g_notice.setText('click a star to place a little kitty');
+                this.scene.g_notice.setText('click a star to place an old man');
                 break;
         }
     }
@@ -182,7 +182,11 @@ export class UseItemTool implements Tool {
                         this.scene.addItem(EventCat, waypoint.id);
                     }
                     break;
-
+                case 'item_man':
+                    if (waypoint.items.length <= 0) {
+                        this.scene.addItem(EventMan, waypoint.id);
+                    }
+                    break;
             }
             this.scene.changeToolTo('none');
         }

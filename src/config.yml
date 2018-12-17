@@ -18,6 +18,7 @@ config:
     boneDuration: 5000
     policeDuration: 10000
     teenDuration: 5000
+    manDuration: 10000
 
   ui:
     buttons: 

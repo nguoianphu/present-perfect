@@ -101,14 +101,20 @@ export class EventCat extends EventItem {
 }
 
 export class EventMan extends EventItem {
-    g_teen: Phaser.GameObjects.Image;
+    g_man: Phaser.GameObjects.Image;
     name = 'event_man';
 
     constructor(scene: MainScene, x: number, y: number, waypoint: Waypoint) {
         super(scene, x, y, waypoint);
         this.add(
-            this.g_teen = new Phaser.GameObjects.Image(this.scene, config.cellWidth / 2, config.cellHeight / 2, 'event_man')
+            this.g_man = new Phaser.GameObjects.Image(this.scene, config.cellWidth / 2, config.cellHeight / 2, 'event_man')
         );
-        this.g_teen.setOrigin(0.5, 0.7);
+        this.g_man.setOrigin(0.5, 0.7);
+        this.scene.tweens.add({
+            targets: this.g_man,
+            alpha: 0.5,
+            duration: config.items.catDuration,
+            onComplete: () => scene.clearItems(waypoint.id)
+        });
     }
 }
