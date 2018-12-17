@@ -20,6 +20,7 @@ export class Boy extends Phaser.GameObjects.Container {
     private g_debugText: Phaser.GameObjects.Text;
 
     public wayPoints: number[] = [];
+    public canMove: boolean = true;
     public isMoving: boolean;
     public predictColor = 0x69d7ff;
     public currentEdge = '';
@@ -216,7 +217,7 @@ export class Boy extends Phaser.GameObjects.Container {
         switch (this.mode) {
             case 'none':
                 if (this.scene.girl.isAtWaypoint(toWaypoint.id)) {
-                    this.scene.gameOver();
+                    this.scene.endGame();
                 }
                 if (toWaypoint.items.length > 0) {
                     toWaypoint.items.forEach((item) => {
@@ -313,6 +314,7 @@ export class Boy extends Phaser.GameObjects.Container {
 
     wander() {
         log('wander');
+        if (!this.canMove) return;
         let choices = (this.scene.g_namedWaypointList.slice()
             .filter(waypoint => waypoint.id !== this.wayPoints[0])
             .filter(waypoint =>

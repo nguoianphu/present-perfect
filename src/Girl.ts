@@ -24,6 +24,7 @@ export class Girl extends Phaser.GameObjects.Container {
 
     public scene: MainScene;
     private movementTween: Phaser.Tweens.Timeline;
+    public canMove: boolean = true;
 
     constructor(scene: Phaser.Scene, cellX: number, cellY: number, g_predictGroup: Phaser.GameObjects.Container, children: GameObject[] = []) {
         super(scene, cellX, cellY);
@@ -143,9 +144,9 @@ export class Girl extends Phaser.GameObjects.Container {
         this.wayPoints.shift();
         log('onWaypointArrived G', this.wayPoints);
 
-        
+
         const waypoint = this.scene.g_waypointList[this.wayPoints[0]];
-        
+
         const nearCatPos = waypoint.connectsList.find(waypointID =>
             (this.scene.g_waypointList[waypointID].items.map(i => i.name).includes('event_cat'))
         );
@@ -185,6 +186,7 @@ export class Girl extends Phaser.GameObjects.Container {
     }
 
     wander() {
+        if (!this.canMove) return;
         const myWaypoint = this.scene.g_waypointList[this.wayPoints[0]];
         const choices = myWaypoint.connectsList;
         const waypoint: number = Phaser.Math.RND.pick(choices);

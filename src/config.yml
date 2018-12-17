@@ -7,7 +7,7 @@ config:
   cellCountH: 10
   
   debug:
-    tool: none # none WaypointTool BoyDebugTool
+    tool: BoyDebugTool # none WaypointTool BoyDebugTool
     showWaypoint: false
     showNamedWaypoint: true
     showBoyFoot: false
@@ -141,7 +141,7 @@ config:
       - id: 16
         cellX: 17
         cellY: 4
-        connects: [15, 36, 30]
+        connects: [15, 35, 30]
       - id: 17
         cellX: 17
         cellY: 0
@@ -155,7 +155,7 @@ config:
         score: 20
         cellX: 11
         cellY: 4
-        connects: [36, 18, 20]
+        connects: [35, 18, 20]
       - id: 20
         cellX: 9
         cellY: 4
@@ -171,11 +171,11 @@ config:
       - id: 23
         cellX: 13
         cellY: 1
-        connects: [22, 35]
+        connects: [22, 24]
       - id: 24
         cellX: 15
         cellY: 1
-        connects: [17, 35]
+        connects: [17, 23]
       - id: 25
         cellX: 9
         cellY: 8
@@ -235,12 +235,6 @@ config:
         cellY: 9
         connects: [13, 14]
       - id: 35
-        name: pool
-        score: 10
-        cellX: 14
-        cellY: 1
-        connects: [23, 24]
-      - id: 36
         name: hospital
         score: 10
         cellX: 15

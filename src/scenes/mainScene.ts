@@ -53,6 +53,8 @@ export class MainScene extends Phaser.Scene implements GM {
     public g_itemsPanel: ItemPanel;
     public g_notice: Phaser.GameObjects.Text;
     g_itemsGroup: Phaser.GameObjects.Container;
+    g_startBG: Phaser.GameObjects.Image;
+    g_endScreen: Phaser.GameObjects.Container;
 
     constructor() {
         super({
@@ -159,6 +161,16 @@ export class MainScene extends Phaser.Scene implements GM {
 
         this.registerMouse();
 
+        this.g_endScreen = this.add.container(0, 0);
+        this.g_startBG = this.add.image(0, 0, 'opening').setOrigin(0);
+        this.g_startBG.setInteractive().on('pointerup', () => {
+            this.g_startBG.destroy();
+            this.g_startBG = null;
+            this.startGame();
+        });
+    }
+
+    startGame() {
         this.boy.wander();
         this.girl.wander();
 
@@ -169,7 +181,7 @@ export class MainScene extends Phaser.Scene implements GM {
                     this.g_notice.setText('Click an icon at the top to choose an item');
                 }
             }
-        })
+        });
     }
 
     update(time: number, delta: number): void {
@@ -420,13 +432,48 @@ export class MainScene extends Phaser.Scene implements GM {
         }
     }
 
-    public gameOver() {
+    public endGame() {
+        log('endGame');
+
         this.boy.setWaypointAndMove(this.boy.wayPoints[0]);
+        this.boy.canMove = false;
         this.girl.setWaypointAndMove(this.girl.wayPoints[0]);
+        this.girl.canMove = false;
+
         const score = {
             'Place': this.getPlaceScore(this.boy.wayPoints[0], this.girl.wayPoints[0]) * 1,
             'Time': this.getTimeScore(0) * 1,
         };
+
+        const g_whiteBG = this.add.graphics({
+            x: 0,
+            y: 0,
+            fillStyle: { color: 0xFFFFFF, alpha: 1 },
+            lineStyle: { width: 10, color: 0xFFFFFF, alpha: 1 },
+        }).fillRect(0, 0, 1920, 1080);
+        this.g_endScreen.add(g_whiteBG);
+        g_whiteBG.setAlpha(0);
+        this.tweens.add({
+            targets: g_whiteBG,
+            alpha: 1,
+            duration: 1000
+        })
+
+        const titleStr = (score.Place ? 'You win!' : 'Game Over!');
+        const g_title = this.add.text(1920 / 2, 400, titleStr, {
+            ...defaultTextStyle,
+            fontSize: 72,
+        })
+        g_title.setOrigin(0.5, 1);
+        this.g_endScreen.add(g_title);
+        
+        const reasonStr = (score.Place ? 'The place is Perfect, You then live happily ever after.' : 'You should have met her at ___ !');
+        const g_reason = this.add.text(1920 / 2, 600, reasonStr, {
+            ...defaultTextStyle,
+            fontSize: 48,
+        })
+        g_reason.setOrigin(0.5, 1);
+        this.g_endScreen.add(g_reason);
     }
 
     public getPlaceScore(boyWaypointID: integer, girlWaypointID: integer): number {
