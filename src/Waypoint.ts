@@ -59,8 +59,8 @@ export class Waypoint extends Phaser.GameObjects.Container {
                 backgroundColor: 'rgba(255,255,255,0.8)',
                 // color: Phaser.Display.Color.ValueToColor(this.debugColor).rgba,
             })
-                // .setOrigin(1, 0.5)
-                .setAngle(20)
+                .setOrigin(0, 1)
+                .setAngle(-20)
             );
             this.add(this.g_name);
             this.add(new NamedWaypointGraphics(scene, this.debugColor, config.cellWidth / 2, config.cellHeight / 2));

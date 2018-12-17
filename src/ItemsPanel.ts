@@ -10,11 +10,12 @@ import { config } from './config';
 
 export class ItemPanel extends Phaser.GameObjects.Container {
     callback: (itemName: string) => void;
+    buttons: ItemButton[];
 
     constructor(scene: Phaser.Scene, x: number, y: number, callback: (itemName: string) => void, children: GameObject[] = []) {
         super(scene, x, y);
         const gap = config.ui.buttonGap;
-        this.add(config.ui.buttons
+        this.add(this.buttons = config.ui.buttons
             .map((itemName, i) => {
                 return new ItemButton(this.scene,
                     itemName,
@@ -34,6 +35,13 @@ export class ItemPanel extends Phaser.GameObjects.Container {
         this.callback(itemName);
     }
 
+    setButtonActive(itemName: string, val: boolean) {
+        const btn = this.buttons.find(btn => btn.itemName === itemName);
+        if (btn != null) btn.setOnUse(val);
+        this.buttons.filter(btn => btn.itemName !== itemName)
+            .forEach((btn) => btn.setOnUse(false));
+    }
+
 
     toString() {
         // return `${this.cellX},${this.cellY}`;
@@ -50,6 +58,7 @@ export class ItemButton extends Phaser.GameObjects.Container {
     public g_icon: Phaser.GameObjects.Image;
     public callback: (itemName: string) => void;
     public itemName: string;
+    bounceLoop: Phaser.Tweens.Tween;
 
     constructor(scene: Phaser.Scene, itemName: string, x: number, y: number, w: number, h: number, callback: (itemName: string) => void) {
         super(scene, x, y);
@@ -58,6 +67,24 @@ export class ItemButton extends Phaser.GameObjects.Container {
         this.itemName = itemName;
         this.callback = callback;
         this.drawCircle(itemName);
+
+        this.bounceLoop = this.scene.tweens.add({
+            targets: this.g_icon,
+            y: '+=5',
+            duration: 200,
+            yoyo: true,
+            repeat: -1,
+            paused: true,
+        })
+    }
+
+    setOnUse(val: boolean) {
+        this.g_icon.y = 0;
+        if (val) {
+            this.bounceLoop.restart();
+        } else {
+            this.bounceLoop.stop();
+        }
     }
 
     drawCircle(itemName: string) {
