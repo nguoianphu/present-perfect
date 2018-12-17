@@ -55,6 +55,8 @@ export class MainScene extends Phaser.Scene implements GM {
     g_itemsGroup: Phaser.GameObjects.Container;
     g_startBG: Phaser.GameObjects.Image;
     g_endScreen: Phaser.GameObjects.Container;
+    goal: string;
+    startCard: CardButton;
 
     constructor() {
         super({
@@ -105,6 +107,10 @@ export class MainScene extends Phaser.Scene implements GM {
 
         this.load.image('event_bus_left_boy', 'event_bus_left_boy.png');
         this.load.image('smoke', 'smoke.png');
+
+        this.load.image('cafe', 'buildings/cafe.png');
+        this.load.image('park', 'buildings/park02.png');
+        this.load.image('school', 'buildings/school.png');
 
 
         this.load.image('stars', '../freeiconspng/stars-png-616-s.png');
@@ -161,11 +167,31 @@ export class MainScene extends Phaser.Scene implements GM {
 
         this.registerMouse();
 
+        this.goal = Phaser.Math.RND.pick(config.goals) as string;
+
         this.g_endScreen = this.add.container(0, 0);
         this.g_startBG = this.add.image(0, 0, 'opening').setOrigin(0);
+        this.startCard = <CardButton>this.add.existing(new CardButton(this, 1600, 500, 350, 500, [
+            new Phaser.GameObjects.Image(this, 0, 0, this.goal).setScale(0.5).setOrigin(0.5),
+            new Phaser.GameObjects.Text(this, 0, 100, this.goal, {
+                ...defaultTextStyle,
+            }).setOrigin(0.5)
+        ]));
+        this.startCard.setAngle(30);
+        this.tweens.add({
+            targets: this.startCard,
+            angle: 10,
+            duration: 2000,
+            delay: 1000,
+            ease: 'Cubic.easeInOut',
+        })
+
+
         this.g_startBG.setInteractive().on('pointerup', () => {
             this.g_startBG.destroy();
             this.g_startBG = null;
+            this.startCard.destroy();
+            this.startCard = null;
             this.startGame();
         });
     }
@@ -466,7 +492,7 @@ export class MainScene extends Phaser.Scene implements GM {
         })
         g_title.setOrigin(0.5, 1);
         this.g_endScreen.add(g_title);
-        
+
         const reasonStr = (score.Place ? 'The place is Perfect, You then live happily ever after.' : 'You should have met her at ___ !');
         const g_reason = this.add.text(1920 / 2, 600, reasonStr, {
             ...defaultTextStyle,
@@ -477,7 +503,7 @@ export class MainScene extends Phaser.Scene implements GM {
     }
 
     public getPlaceScore(boyWaypointID: integer, girlWaypointID: integer): number {
-        return 0;
+        return (this.g_waypointList[boyWaypointID].name === this.goal ? 1 : 0);
     }
 
     public getTimeScore(seconds: integer): number {

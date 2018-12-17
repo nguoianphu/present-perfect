@@ -24,7 +24,7 @@ export class CardButtonGraphics extends Phaser.GameObjects.Graphics {
         super(scene, {
             x, y,
             fillStyle: { color: 0xfcfcf9, alpha: 1 },
-            lineStyle: { width: 1, color: 0xAAAAAA, alpha: 1 },
+            lineStyle: { width: 5, color: 0xAAAAAA, alpha: 1 },
         });
 
         this.w = w;
@@ -32,7 +32,7 @@ export class CardButtonGraphics extends Phaser.GameObjects.Graphics {
 
         this.drawUpCard()
 
-        this.setInteractive(new Phaser.Geom.Rectangle(0, 0, w, h), Phaser.Geom.Rectangle.Contains);
+        // this.setInteractive(new Phaser.Geom.Rectangle(0, 0, w, h), Phaser.Geom.Rectangle.Contains);
         this.on('pointerover', function (pointer: Pointer, localX: number, localY: number, evt: EventContext) {
             console.log('pointerover');
             this.drawOverCard();

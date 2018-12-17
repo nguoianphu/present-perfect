@@ -8,6 +8,7 @@ export type IConfig = {
     cellCountH: integer;
     debug: Debug;
 
+    goals: string[];
     items: Items;
     ui: UI;
     boy: Boy;

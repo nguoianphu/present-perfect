@@ -13,6 +13,10 @@ config:
     showBoyFoot: false
     showGirlFoot: false
 
+  goals:
+    - cafe
+    - park
+    - school
   items:
     catDuration: 5000
     boneDuration: 5000
