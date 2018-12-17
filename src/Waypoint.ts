@@ -12,6 +12,7 @@ type RoutingTable = {
 const Vector2 = Phaser.Math.Vector2;
 import { EventContext, defaultTextStyle, compareNumber } from './Utils';
 import { config } from './config';
+import { EventItem } from './Items';
 
 export class Waypoint extends Phaser.GameObjects.Container {
     public id: integer;
@@ -24,6 +25,7 @@ export class Waypoint extends Phaser.GameObjects.Container {
     public distanceMap: DistanceMap = {};
     public routingTable: RoutingTable = {};
     g_name: Phaser.GameObjects.Text;
+    public items: EventItem[] = [];
 
 
     constructor(scene: Phaser.Scene, id: integer, name: string, cellX: number, cellY: number, connects: number[] = [], children: GameObject[] = []) {

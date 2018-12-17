@@ -30,10 +30,14 @@ config:
   boy:
     startCellID: 0
     speed: 1
+    stayTime: 3000
+    mode:
+      policeSpeed: 5
   
   girl:
     startCellID: 15
     speed: 0.7
+    stayTime: 5000
 
 
   level:

@@ -141,13 +141,13 @@ export class Girl extends Phaser.GameObjects.Container {
         this.isMoving = false;
 
         this.wayPoints.shift();
-        log('onWaypointArrived', this.wayPoints);
+        log('onWaypointArrived G', this.wayPoints);
         this.scene.drawWaypoints(this.wayPoints.slice(), null, this.predictColor, this.g_predictGroup);
         if (this.wayPoints.length > 1) {
             this.moveToWaypoint(this.scene.g_waypointList[this.wayPoints[0]], this.scene.g_waypointList[this.wayPoints[1]]);
         } else {
             this.scene.time.addEvent({
-                delay: 3000,
+                delay: config.girl.stayTime,
                 callback: () => {
                     this.wander();
                 },
@@ -156,9 +156,10 @@ export class Girl extends Phaser.GameObjects.Container {
     }
 
     wander() {
-        const choices = this.scene.g_namedWaypointList.slice().filter(waypoint => waypoint.id !== this.wayPoints[0]);
-        const waypoint = Phaser.Math.RND.pick(choices);
-        this.setWaypointAndMove(waypoint.id);
+        const myWaypoint = this.scene.g_waypointList[this.wayPoints[0]];
+        const choices = myWaypoint.connectsList;
+        const waypoint: number = Phaser.Math.RND.pick(choices);
+        this.setWaypointAndMove(waypoint);
     }
 
     toString() {

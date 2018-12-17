@@ -34,10 +34,17 @@ export interface UI {
 export interface Boy {
     startCellID: integer;
     speed: number;
+    stayTime: number;
+    mode: BoyMode;
 }
 export interface Girl {
     startCellID: integer;
     speed: number;
+    stayTime: number;
+}
+
+export interface BoyMode{
+    policeSpeed:number;
 }
 
 export interface Level {

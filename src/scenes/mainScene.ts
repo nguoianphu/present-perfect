@@ -11,6 +11,9 @@ import { Waypoint } from '../Waypoint';
 import { Boy } from '../Boy';
 import { Girl } from '../Girl';
 import { ItemPanel } from '../ItemsPanel';
+import { Smoke } from '../Smoke';
+import { Tool, WaypointTool, BoyDebugTool, EmptyTool, UseItemTool } from '../Tools';
+import { EventItem } from '../Items';
 
 type Pointer = Phaser.Input.Pointer;
 type Scene = Phaser.Scene;
@@ -49,6 +52,7 @@ export class MainScene extends Phaser.Scene implements GM {
     public girlPredict: Phaser.GameObjects.Container;
     public g_itemsPanel: ItemPanel;
     public g_notice: Phaser.GameObjects.Text;
+    g_itemsGroup: Phaser.GameObjects.Container;
 
     constructor() {
         super({
@@ -67,23 +71,37 @@ export class MainScene extends Phaser.Scene implements GM {
     preload(): void {
         // this.load.image('bg', './assets/publicDomain/paper_texture_cells_light_55327_1280x720.jpg');
         this.load.baseURL = './assets/brianTW/';
-        this.load.image('base', 'base.png');
-        this.load.image('boy', 'boy.png');
-        this.load.image('building', 'building.png');
+        // this.load.image('base', 'base.png');
+        // this.load.image('building', 'building.png');
+        this.load.image('background', 'background.png');
+        this.load.image('opening', 'opening.png');
 
-        this.load.image('event_A', 'event_A.png');
-        this.load.image('event_B', 'event_B.png');
-        this.load.image('event_bone', 'event_bone.png');
-        this.load.image('event_C', 'event_C.png');
         this.load.image('girl', 'girl.png');
+        this.load.image('boy', 'boy.png');
+
+        this.load.image('item_empty', 'item_empty.png');
+        // this.load.image('event_empty', 'event_empty.png');
 
         this.load.image('item_bone', 'item_bone.png');
+        this.load.image('event_bone', 'event_bone.png');
+
         this.load.image('item_cat', 'item_cat.png');
-        this.load.image('item_empty', 'item_empty.png');
+        this.load.image('event_cat', 'event_cat.png');
+
         this.load.image('item_maid', 'item_maid.png');
+        this.load.image('event_maid', 'event_maid.png');
+
         this.load.image('item_man', 'item_man.png');
+        this.load.image('event_man', 'event_man.png');
+
         this.load.image('item_police', 'item_police.png');
+        this.load.image('event_police', 'event_police.png');
+
         this.load.image('item_teen', 'item_teen.png');
+        this.load.image('event_teen', 'event_teen.png');
+
+
+        this.load.image('smoke', 'smoke.png');
 
 
         this.load.image('stars', '../freeiconspng/stars-png-616-s.png');
@@ -93,7 +111,7 @@ export class MainScene extends Phaser.Scene implements GM {
         (<any>window).scene = this;
         (<any>window).Debug = Debug;
 
-        this.g_bg = this.add.image(0, 0, 'base')
+        this.g_bg = this.add.image(0, 0, 'background')
             // .setScale(1920 / 1280 * 2, 1080 / 720 * 2)
             // .setScale(1920 / 1280 * 2, 1080 / 720 * 2)
             .setOrigin(0)
@@ -105,11 +123,11 @@ export class MainScene extends Phaser.Scene implements GM {
 
         this.g_tilesContainer = this.add.container(0, 0);
 
-        this.g_buildings = this.add.image(0, 0, 'building')
-            // .setScale(1920 / 1280 * 2, 1080 / 720 * 2)
-            // .setScale(1920 / 1280 * 2, 1080 / 720 * 2)
-            .setOrigin(0)
-            ;
+        // this.g_buildings = this.add.image(0, 0, 'building')
+        //     // .setScale(1920 / 1280 * 2, 1080 / 720 * 2)
+        //     // .setScale(1920 / 1280 * 2, 1080 / 720 * 2)
+        //     .setOrigin(0)
+        //     ;
         this.spawnWaypoints();
 
 
@@ -119,6 +137,7 @@ export class MainScene extends Phaser.Scene implements GM {
         this.spawnBoy();
 
         this.g_starsGroup = this.add.container(0, 0);
+        this.g_itemsGroup = this.add.container(0, 0);
 
         this.add.existing(this.g_itemsPanel = new ItemPanel(this, config.ui.panelX, config.ui.panelY, this.onItemButtonPressed));
 
@@ -375,153 +394,22 @@ export class MainScene extends Phaser.Scene implements GM {
             this.currentTool.afterEnter();
         }
     }
-}
 
-interface Tool {
-    activeWaypoint: Waypoint;
-    name: string;
-    pointerdown(scene: MainScene, pointer: Phaser.Input.Pointer): void;
-    pointermove(scene: MainScene, pointer: Phaser.Input.Pointer): void;
-    pointerup(scene: MainScene, pointer: Phaser.Input.Pointer): void;
-    beforeLeave(): void;
-    afterEnter(): void;
-}
+    public addItem(ItemClass: (typeof EventItem), waypointID: integer) {
+        const waypoint = this.g_waypointList[waypointID];
+        const g_item = new ItemClass(this, waypoint.x, waypoint.y);
 
-class WaypointTool implements Tool {
-    activeWaypoint: Waypoint = null;
-    name = 'WaypointTool';
+        waypoint.items.push(g_item);
+        this.g_itemsGroup.add(g_item);
 
-    beforeLeave(): void { };
-    afterEnter(): void { };
-    pointerdown(scene: MainScene, pointer: Phaser.Input.Pointer) {
-        const cellPos = scene.getCellPosition(pointer.x, pointer.y);
-        if (!this.activeWaypoint) {
-            if (scene.g_waypointMatrix[cellPos.x][cellPos.y] != null) {
-                this.activeWaypoint = scene.g_waypointMatrix[cellPos.x][cellPos.y];
-                scene.g_waypointMatrix[cellPos.x][cellPos.y] = null;
-            } else {
-                this.activeWaypoint = scene.add.existing(new Waypoint(scene, scene.g_waypointList.length, '', cellPos.x, cellPos.y)) as Waypoint;
-            }
-        }
+        this.g_itemsGroup.add(new Smoke(this, waypoint.x, waypoint.y));
     }
-    pointermove(scene: MainScene, pointer: Phaser.Input.Pointer) {
-        if (this.activeWaypoint) {
-            const cellPos = scene.getCellPosition(pointer.x, pointer.y);
-            this.activeWaypoint.setCellPosition(cellPos.x, cellPos.y);
-        }
-    }
-    pointerup(scene: MainScene, pointer: Phaser.Input.Pointer) {
-        if (scene.g_waypointMatrix[this.activeWaypoint.cellX][this.activeWaypoint.cellY] == null) {
-            scene.g_waypointMatrix[this.activeWaypoint.cellX][this.activeWaypoint.cellY] = this.activeWaypoint;
-            if (scene.g_waypointList.indexOf(this.activeWaypoint) < 0) scene.g_waypointList.push(this.activeWaypoint);
-            scene.printWaypoints();
-            this.activeWaypoint = null;
-        }
-    }
-}
 
-class BoyDebugTool implements Tool {
-    activeWaypoint: Waypoint = null;
-    name = 'BoyDebugTool';
+    public clearItems(waypointID: integer) {
+        const waypoint = this.g_waypointList[waypointID];
 
-    beforeLeave(): void { };
-    afterEnter(): void { };
-    pointerdown(scene: MainScene, pointer: Phaser.Input.Pointer) {
-    }
-    pointermove(scene: MainScene, pointer: Phaser.Input.Pointer) {
-    }
-    pointerup(scene: MainScene, pointer: Phaser.Input.Pointer) {
-        const cellPos = scene.getCellPosition(pointer.x, pointer.y);
-        log('pointerup', cellPos);
-        const boyPosID = scene.g_waypointMatrix[scene.boy.cellX][scene.boy.cellY].id;
-        const wayPoint = scene.g_waypointMatrix[cellPos.x][cellPos.y];
-        if (wayPoint != null) {
-            scene.boy.setWaypointAndMove(wayPoint.id);
-        }
+        waypoint.items.forEach(item => item.destroy());
     }
 }
 
 
-class EmptyTool implements Tool {
-    activeWaypoint: Waypoint = null;
-    name = 'none';
-
-    beforeLeave(): void { };
-    afterEnter(): void { };
-    pointerdown(scene: MainScene, pointer: Phaser.Input.Pointer) { }
-    pointermove(scene: MainScene, pointer: Phaser.Input.Pointer) { }
-    pointerup(scene: MainScene, pointer: Phaser.Input.Pointer) { }
-}
-
-class UseItemTool implements Tool {
-    activeWaypoint: Waypoint = null;
-    itemName: string;
-    scene: MainScene;
-    name = 'UseItemTool';
-    g_starsGroup: Phaser.GameObjects.Container;
-
-    constructor(scene: MainScene, itemName: string, g_starsGroup: Phaser.GameObjects.Container) {
-        this.scene = scene;
-        this.itemName = itemName;
-        this.g_starsGroup = g_starsGroup;
-    }
-
-    afterEnter(): void {
-        log('UseItemTool setUp');
-        switch (this.itemName) {
-            case 'item_bone':
-                // this.scene.g_waypointList
-                this.scene.g_itemsPanel.setButtonActive('item_bone', true);
-                this.g_starsGroup.add(this.scene.g_waypointList.filter(waypoint => waypoint.name == '')
-                    .map(waypoint => new EventStar(this.scene, waypoint.x + config.cellWidth / 2, waypoint.y + config.cellHeight / 2))
-                )
-                this.scene.g_notice.setText('click a star to place a bone');
-                break;
-        }
-    }
-
-    beforeLeave(): void {
-        this.scene.g_itemsPanel.setButtonActive('', true);
-        this.g_starsGroup.removeAll(true);
-        this.scene.g_notice.setText('');
-    };
-    pointerdown(scene: MainScene, pointer: Phaser.Input.Pointer) { }
-    pointermove(scene: MainScene, pointer: Phaser.Input.Pointer) { }
-    pointerup(scene: MainScene, pointer: Phaser.Input.Pointer) {
-        const cellPos = scene.getCellPosition(pointer.x, pointer.y);
-        if (scene.g_waypointMatrix[cellPos.x][cellPos.y] != null) {
-            const waypoint = scene.g_waypointMatrix[cellPos.x][cellPos.y];
-
-            log('waypoint', waypoint.id)
-        }
-
-
-    }
-}
-
-
-
-class EventStar extends Phaser.GameObjects.Container {
-    g_star: Phaser.GameObjects.Image;
-
-    constructor(scene: Phaser.Scene, x: number, y: number) {
-        super(scene, x, y);
-        const gap = config.ui.buttonGap;
-        this.add(
-            this.g_star = new Phaser.GameObjects.Image(this.scene, 0, 0, 'stars')
-        );
-        this.g_star.setScale(0.5);
-    }
-}
-
-class EventBone extends Phaser.GameObjects.Container {
-    g_star: Phaser.GameObjects.Image;
-
-    constructor(scene: Phaser.Scene, x: number, y: number) {
-        super(scene, x, y);
-        const gap = config.ui.buttonGap;
-        this.add(
-            this.g_star = new Phaser.GameObjects.Image(this.scene, 0, 0, 'stars')
-        );
-    }
-}
