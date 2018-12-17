@@ -40,6 +40,8 @@ config:
     stayTime: 3000
     mode:
       policeSpeed: 5
+      busSpeed: 5
+      manSpeed: 0.5
   
   girl:
     startCellID: 15

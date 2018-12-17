@@ -141,6 +141,10 @@ export class Girl extends Phaser.GameObjects.Container {
         this.setCellPosition(toWaypoint.cellX, toWaypoint.cellY);
         this.isMoving = false;
 
+        if (this.scene.boy.isAtWaypoint(toWaypoint.id)) {
+            this.scene.endGame();
+        }
+
         this.wayPoints.shift();
         log('onWaypointArrived G', this.wayPoints);
 

@@ -7,6 +7,7 @@ import { Waypoint } from './Waypoint';
 import { MainScene } from './scenes/mainScene';
 import * as Debug from 'debug';
 import { Utils } from 'phaser';
+import { ManSmoke } from './Smoke';
 
 const log = Debug('Present:Boy');
 
@@ -29,6 +30,7 @@ export class Boy extends Phaser.GameObjects.Container {
     private movementTween: Phaser.Tweens.Timeline = null;
 
     public mode: string = 'none';
+    public manPower: integer = 0;
 
     constructor(scene: Phaser.Scene, cellX: number, cellY: number, g_predictGroup: Phaser.GameObjects.Container, bchildren: GameObject[] = []) {
         super(scene, cellX, cellY);
@@ -76,6 +78,16 @@ export class Boy extends Phaser.GameObjects.Container {
                 ]);
                 g_police.setOrigin(0.5, 0.9);
                 g_boy.setOrigin(0.5, 0.5).setScale(0.9).setAngle(45);
+                break;
+            case 'man_boy':
+                let g_man: Phaser.GameObjects.Image;
+                this.g_boyContainer.removeAll(true);
+                this.g_boyContainer.add([
+                    g_man = new Phaser.GameObjects.Image(this.scene, 30, 0, 'event_man'),
+                    g_boy = new Phaser.GameObjects.Image(this.scene, -30, 0, 'boy'),
+                ]);
+                g_man.setOrigin(0.5, 0.9);
+                g_boy.setOrigin(0.5, 0.9);
                 break;
             case 'scared_boy':
                 this.g_boyContainer.removeAll(true);
@@ -153,8 +165,12 @@ export class Boy extends Phaser.GameObjects.Container {
                 speed = config.boy.mode.policeSpeed;
                 break;
             case 'bus_boy':
-                speed = config.boy.mode.policeSpeed;
+                speed = config.boy.mode.busSpeed;
                 break;
+            case 'man_boy':
+                speed = config.boy.mode.manSpeed;
+                break;
+
         }
 
         const duration = fromWaypoint.distanceMap[toWaypoint.id].dist * 1000 / speed;
@@ -230,6 +246,15 @@ export class Boy extends Phaser.GameObjects.Container {
                                 this.setWaypointAndMove(policeStation.id);
                                 return;
                                 break;
+                            case 'event_man':
+                                this.mode = 'man_boy';
+                                this.manPower = 2;
+                                this.updateFace();
+                                const girlWaypointID = this.scene.girl.wayPoints[0];
+                                this.scene.clearItems(toWaypoint.id);
+                                this.setWaypointAndMove(girlWaypointID);
+                                return;
+                                break;
                             case 'event_bone':
                                 this.mode = 'scared_boy';
                                 this.updateFace();
@@ -283,6 +308,16 @@ export class Boy extends Phaser.GameObjects.Container {
                     this.mode = 'none';
                     this.updateFace();
                 }
+                break;
+            case 'man_boy':
+                this.manPower--;
+                if (this.manPower <= 0) {
+                    this.mode = 'none';
+                    this.updateFace();
+                    this.setWaypointAndMove(toWaypoint.id);
+                    this.scene.g_itemsGroup.add(new ManSmoke(this.scene, toWaypoint.x - 20, toWaypoint.y));
+                }
+                break;
             case 'bus_boy':
                 if (toWaypoint.name === 'bus stop 1' || toWaypoint.name === 'bus stop 2' || toWaypoint.name === 'bus stop 3') {
                     this.mode = 'none';

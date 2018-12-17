@@ -47,6 +47,8 @@ export interface Girl {
 
 export interface BoyMode {
     policeSpeed: number;
+    busSpeed: number;
+    manSpeed: number;
 }
 
 export interface Items {
