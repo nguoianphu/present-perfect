@@ -13,6 +13,12 @@ config:
     showBoyFoot: false
     showGirlFoot: false
 
+  items:
+    catDuration: 5000
+    boneDuration: 5000
+    policeDuration: 10000
+    teenDuration: 5000
+
   ui:
     buttons: 
       - item_bone
@@ -99,6 +105,7 @@ config:
         connects: [4, 6, 20]
       - id: 8
         name: cafe
+        score: 20
         cellX: 0
         cellY: 6
         connects: [5, 9]
@@ -144,6 +151,7 @@ config:
         connects: [13, 19, 25, 33]
       - id: 19
         name: sports ground
+        score: 20
         cellX: 11
         cellY: 4
         connects: [36, 18, 20]
@@ -173,56 +181,67 @@ config:
         connects: [12, 18]
       - id: 26
         name: game center
+        score: 20
         cellX: 3
         cellY: 6
         connects: [5, 27]
       - id: 27
         name: animax
+        score: 10
         cellX: 5
         cellY: 6
         connects: [6, 26]
       - id: 28
         name: bus stop 1
+        score: 0
         cellX: 1
         cellY: 9
         connects: [9, 10]
       - id: 29
         name: bus stop 3
+        score: 0
         cellX: 17
         cellY: 8
         connects: [14, 15]
       - id: 30
         name: bus stop 2
+        score: 0
         cellX: 17
         cellY: 1
         connects: [16, 17]
       - id: 31
         name: playground
+        score: 50
         cellX: 10
         cellY: 9
         connects: [11, 13]
       - id: 32
         name: school
+        score: 20
         cellX: 11
         cellY: 2
         connects: [21, 22]
       - id: 33
         name: police station
+        score: 10
         cellX: 12
         cellY: 6
         connects: [15, 18]
       - id: 34
         name: park
+        score: 10
         cellX: 14
         cellY: 9
         connects: [13, 14]
       - id: 35
         name: pool
+        score: 10
         cellX: 14
         cellY: 1
         connects: [23, 24]
       - id: 36
         name: hospital
+        score: 10
         cellX: 15
         cellY: 4
         connects: [16, 19]

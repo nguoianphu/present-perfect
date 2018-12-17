@@ -142,6 +142,18 @@ export class Girl extends Phaser.GameObjects.Container {
 
         this.wayPoints.shift();
         log('onWaypointArrived G', this.wayPoints);
+
+        
+        const waypoint = this.scene.g_waypointList[this.wayPoints[0]];
+        
+        const nearCatPos = waypoint.connectsList.find(waypointID =>
+            (this.scene.g_waypointList[waypointID].items.map(i => i.name).includes('event_cat'))
+        );
+        if (nearCatPos != null) {
+            this.setWaypointAndMove(nearCatPos);
+            return;
+        }
+
         this.scene.drawWaypoints(this.wayPoints.slice(), null, this.predictColor, this.g_predictGroup);
         if (this.wayPoints.length > 1) {
             this.moveToWaypoint(this.scene.g_waypointList[this.wayPoints[0]], this.scene.g_waypointList[this.wayPoints[1]]);
@@ -152,6 +164,23 @@ export class Girl extends Phaser.GameObjects.Container {
                     this.wander();
                 },
             })
+        }
+    }
+
+    isAtWaypoint(waypointID: integer) {
+        if (this.isMoving) return false;
+        if (this.wayPoints[0] === waypointID) return true;
+        return false;
+    }
+
+    onCatAdded() {
+        const waypoint = this.scene.g_waypointList[this.wayPoints[this.isMoving ? 1 : 0]];
+
+        const nearCatPos = waypoint.connectsList.find(waypointID =>
+            (this.scene.g_waypointList[waypointID].items.map(i => i.name).includes('event_cat'))
+        );
+        if (nearCatPos != null) {
+            this.setWaypointAndMove(nearCatPos);
         }
     }
 

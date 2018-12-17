@@ -7,6 +7,8 @@ export type IConfig = {
     cellCountW: integer;
     cellCountH: integer;
     debug: Debug;
+
+    items: Items;
     ui: UI;
     boy: Boy;
     girl: Girl;
@@ -43,10 +45,16 @@ export interface Girl {
     stayTime: number;
 }
 
-export interface BoyMode{
-    policeSpeed:number;
+export interface BoyMode {
+    policeSpeed: number;
 }
 
+export interface Items {
+    catDuration: number;
+    boneDuration: number;
+    policeDuration: number;
+    teenDuration: number;
+}
 export interface Level {
     waypoints: Waypoint[]
 }

@@ -397,18 +397,41 @@ export class MainScene extends Phaser.Scene implements GM {
 
     public addItem(ItemClass: (typeof EventItem), waypointID: integer) {
         const waypoint = this.g_waypointList[waypointID];
-        const g_item = new ItemClass(this, waypoint.x, waypoint.y);
+        const g_item = new ItemClass(this, waypoint.x, waypoint.y, waypoint);
 
         waypoint.items.push(g_item);
         this.g_itemsGroup.add(g_item);
 
         this.g_itemsGroup.add(new Smoke(this, waypoint.x, waypoint.y));
+
+        if (g_item.name === 'event_cat') {
+            this.girl.onCatAdded();
+        }
     }
 
     public clearItems(waypointID: integer) {
         const waypoint = this.g_waypointList[waypointID];
 
-        waypoint.items.forEach(item => item.destroy());
+        if (waypoint.items.length > 0) {
+            waypoint.items.forEach(item => item.destroy());
+            waypoint.items = [];
+            this.g_itemsGroup.add(new Smoke(this, waypoint.x, waypoint.y));
+        }
+    }
+
+    public gameOver() {
+        const score = {
+            'Place': this.getPlaceScore() * 1,
+            'Time': this.getTimeScore() * 1,
+        };
+    }
+
+    public getPlaceScore(): number {
+        return 0;
+    }
+
+    public getTimeScore(): number {
+        return 0;
     }
 }
 

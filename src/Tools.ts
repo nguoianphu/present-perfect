@@ -2,7 +2,7 @@ import * as Debug from 'debug';
 const log = Debug('Present:Tool');
 
 import { MainScene } from "./scenes/mainScene";
-import { EventStar, EventBone, EventPolice } from "./Items";
+import { EventStar, EventBone, EventPolice, EventTeen, EventCat } from "./Items";
 import { Waypoint } from "./Waypoint";
 import { config } from "./config";
 
@@ -117,6 +117,33 @@ export class UseItemTool implements Tool {
                 )
                 this.scene.g_notice.setText('click a star to place a policeman');
                 break;
+            case 'item_teen':
+                // this.scene.g_waypointList
+                this.scene.g_itemsPanel.setButtonActive('item_teen', true);
+                this.g_starsGroup.add(this.scene.g_waypointList
+                    .filter(waypoint => waypoint.name == '' && waypoint.items.length <= 0)
+                    .map(waypoint => new EventStar(this.scene, waypoint.x + config.cellWidth / 2, waypoint.y + config.cellHeight / 2))
+                )
+                this.scene.g_notice.setText('click a star to place a gangster');
+                break;
+            case 'item_cat':
+                // this.scene.g_waypointList
+                this.scene.g_itemsPanel.setButtonActive('item_cat', true);
+                this.g_starsGroup.add(this.scene.g_waypointList
+                    .filter(waypoint => waypoint.items.length <= 0)
+                    .map(waypoint => new EventStar(this.scene, waypoint.x + config.cellWidth / 2, waypoint.y + config.cellHeight / 2))
+                )
+                this.scene.g_notice.setText('click a star to place a little kitty');
+                break;
+            case 'item_man':
+                // this.scene.g_waypointList
+                this.scene.g_itemsPanel.setButtonActive('item_man', true);
+                this.g_starsGroup.add(this.scene.g_waypointList
+                    .filter(waypoint => waypoint.name == '' && waypoint.items.length <= 0)
+                    .map(waypoint => new EventStar(this.scene, waypoint.x + config.cellWidth / 2, waypoint.y + config.cellHeight / 2))
+                )
+                this.scene.g_notice.setText('click a star to place a little kitty');
+                break;
         }
     }
 
@@ -143,6 +170,16 @@ export class UseItemTool implements Tool {
                 case 'item_police':
                     if (waypoint.items.length <= 0) {
                         this.scene.addItem(EventPolice, waypoint.id);
+                    }
+                    break;
+                case 'item_teen':
+                    if (waypoint.items.length <= 0) {
+                        this.scene.addItem(EventTeen, waypoint.id);
+                    }
+                    break;
+                case 'item_cat':
+                    if (waypoint.items.length <= 0) {
+                        this.scene.addItem(EventCat, waypoint.id);
                     }
                     break;
 
