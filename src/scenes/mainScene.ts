@@ -178,7 +178,7 @@ export class MainScene extends Phaser.Scene implements GM {
             }).setOrigin(0.5)
         ]));
         this.startCard.setAngle(30);
-        this.tweens.add({
+        const tween = this.tweens.add({
             targets: this.startCard,
             angle: 10,
             duration: 2000,
@@ -188,10 +188,11 @@ export class MainScene extends Phaser.Scene implements GM {
 
 
         this.g_startBG.setInteractive().on('pointerup', () => {
+            tween.stop();
             this.g_startBG.destroy();
             this.g_startBG = null;
-            this.startCard.destroy();
-            this.startCard = null;
+            this.g_itemsPanel.add(this.startCard);
+            this.startCard.setPosition(config.ui.cardX, config.ui.cardY).setScale(0.5).setAngle(-10);
             this.startGame();
         });
     }
@@ -493,7 +494,7 @@ export class MainScene extends Phaser.Scene implements GM {
         g_title.setOrigin(0.5, 1);
         this.g_endScreen.add(g_title);
 
-        const reasonStr = (score.Place ? 'The place is Perfect, You then live happily ever after.' : 'You should have met her at ___ !');
+        const reasonStr = (score.Place ? 'The place is Perfect, They live happily ever after.' : `They should have met at the ${this.goal} !`);
         const g_reason = this.add.text(1920 / 2, 600, reasonStr, {
             ...defaultTextStyle,
             fontSize: 48,

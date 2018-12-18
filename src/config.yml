@@ -28,12 +28,14 @@ config:
     buttons: 
       - item_bone
       - item_cat
-      - item_maid
+      # - item_maid
       - item_man
       - item_police
-      - item_teen
-    panelX: 100
+      # - item_teen
+    panelX: 280
     panelY: 100
+    cardX: -160
+    cardY: 50
 
     buttonW: 98
     buttonH: 104
@@ -41,7 +43,8 @@ config:
   boy:
     startCellID: 0
     speed: 1
-    stayTime: 3000
+    stayTime: 1000
+    walkDist: 8
     mode:
       policeSpeed: 5
       busSpeed: 5

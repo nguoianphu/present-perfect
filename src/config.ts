@@ -31,6 +31,8 @@ export interface UI {
     buttonW: number;
     buttonH: number;
     buttonGap: number;
+    cardX: number;
+    cardY: number;
 }
 
 
@@ -39,6 +41,7 @@ export interface Boy {
     speed: number;
     stayTime: number;
     mode: BoyMode;
+    walkDist: number;
 }
 export interface Girl {
     startCellID: integer;

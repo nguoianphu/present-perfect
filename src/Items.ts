@@ -19,6 +19,12 @@ export class EventStar extends Phaser.GameObjects.Container {
             this.g_star = new Phaser.GameObjects.Image(this.scene, 0, 0, 'stars')
         );
         this.g_star.setScale(0.5);
+        this.scene.tweens.add({
+            targets: this.g_star,
+            angle: 360,
+            duration: 4000,
+            repeat: -1,
+        })
     }
 }
 

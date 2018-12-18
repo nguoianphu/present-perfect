@@ -28,6 +28,7 @@ export class Boy extends Phaser.GameObjects.Container {
 
     public scene: MainScene;
     private movementTween: Phaser.Tweens.Timeline = null;
+    public goal?: integer = null;
 
     public mode: string = 'none';
     public manPower: integer = 0;
@@ -349,23 +350,37 @@ export class Boy extends Phaser.GameObjects.Container {
 
     wander() {
         log('wander');
+        const myWaypoint = this.scene.g_waypointList[this.wayPoints[0]];
         if (!this.canMove) return;
         let choices = (this.scene.g_namedWaypointList.slice()
             .filter(waypoint => waypoint.id !== this.wayPoints[0])
+            .filter(waypoint => myWaypoint.routingTable[waypoint.id].totalDist <= config.boy.walkDist)
             .filter(waypoint =>
                 !(waypoint.items.map(i => i.name).includes('event_bone'))
             )
         );
+        // const myWaypoint = this.scene.g_waypointList[this.wayPoints[0]];
+        // let choices = myWaypoint.connectsList;
+
+        // const girlWaypointID = this.scene.girl.wayPoints[0];
+        // const { route, totalDist } = this.scene.getWaypoints(boyWaypointID, girlWaypointID);
+        // choices.sort((a, b) => {
+        //     if (a === route[0]) return -1;
+        //     if (b === route[0]) return 1;
+        //     return 0;
+        // })
 
         const nearBonePos = this.scene.g_waypointList[this.wayPoints[0]].connectsList.find(waypointID =>
             (this.scene.g_waypointList[waypointID].items.map(i => i.name).includes('event_bone'))
         );
         if (nearBonePos != null) {
-            choices = this.scene.g_waypointList[this.wayPoints[0]].connectsList.filter(waypointID =>
+            choices = (this.scene.g_waypointList[this.wayPoints[0]].connectsList.filter(waypointID =>
                 !(this.scene.g_waypointList[waypointID].items.map(i => i.name).includes('event_bone'))
-            ).map(i => this.scene.g_waypointList[i]);
+            )
+                .map(i => this.scene.g_waypointList[i])
+            );
         }
-        const waypoint = Phaser.Math.RND.pick(choices);
+        const waypoint = Phaser.Math.RND.weightedPick(choices);//.pick(choices);
         this.setWaypointAndMove(waypoint.id);
 
     }

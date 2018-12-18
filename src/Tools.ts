@@ -106,7 +106,7 @@ export class UseItemTool implements Tool {
                     .filter(waypoint => waypoint.name == '' && waypoint.items.length <= 0)
                     .map(waypoint => new EventStar(this.scene, waypoint.x + config.cellWidth / 2, waypoint.y + config.cellHeight / 2))
                 )
-                this.scene.g_notice.setText('click a star to place a dog');
+                this.scene.g_notice.setText('Boy is afraid of dogs');
                 break;
             case 'item_police':
                 // this.scene.g_waypointList
@@ -115,7 +115,7 @@ export class UseItemTool implements Tool {
                     .filter(waypoint => waypoint.name == '' && waypoint.items.length <= 0)
                     .map(waypoint => new EventStar(this.scene, waypoint.x + config.cellWidth / 2, waypoint.y + config.cellHeight / 2))
                 )
-                this.scene.g_notice.setText('click a star to place a policeman');
+                this.scene.g_notice.setText('policeman may catch someone');
                 break;
             case 'item_teen':
                 // this.scene.g_waypointList
@@ -124,7 +124,7 @@ export class UseItemTool implements Tool {
                     .filter(waypoint => waypoint.name == '' && waypoint.items.length <= 0)
                     .map(waypoint => new EventStar(this.scene, waypoint.x + config.cellWidth / 2, waypoint.y + config.cellHeight / 2))
                 )
-                this.scene.g_notice.setText('click a star to place a gangster');
+                this.scene.g_notice.setText('gangster is... staring at a wall');
                 break;
             case 'item_cat':
                 // this.scene.g_waypointList
@@ -133,7 +133,7 @@ export class UseItemTool implements Tool {
                     .filter(waypoint => waypoint.items.length <= 0)
                     .map(waypoint => new EventStar(this.scene, waypoint.x + config.cellWidth / 2, waypoint.y + config.cellHeight / 2))
                 )
-                this.scene.g_notice.setText('click a star to place a little kitty');
+                this.scene.g_notice.setText('Girl loves little kitty');
                 break;
             case 'item_man':
                 // this.scene.g_waypointList
@@ -141,8 +141,8 @@ export class UseItemTool implements Tool {
                 this.g_starsGroup.add(this.scene.g_waypointList
                     .filter(waypoint => waypoint.name == '' && waypoint.items.length <= 0)
                     .map(waypoint => new EventStar(this.scene, waypoint.x + config.cellWidth / 2, waypoint.y + config.cellHeight / 2))
-                )
-                this.scene.g_notice.setText('click a star to place an old man');
+                );
+                this.scene.g_notice.setText('The wise old man may guide Boy for a short time');
                 break;
         }
     }
@@ -150,7 +150,7 @@ export class UseItemTool implements Tool {
     beforeLeave(): void {
         this.scene.g_itemsPanel.setButtonActive('', true);
         this.g_starsGroup.removeAll(true);
-        this.scene.g_notice.setText('');
+        this.scene.g_notice.setText(`Guide both of them to meet at (${this.scene.goal})`);
     };
     pointerdown(scene: MainScene, pointer: Phaser.Input.Pointer) { }
     pointermove(scene: MainScene, pointer: Phaser.Input.Pointer) { }
