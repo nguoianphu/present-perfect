@@ -461,10 +461,10 @@ export class MainScene extends Phaser.Scene implements GM {
     public endGame() {
         log('endGame');
 
-        this.boy.setWaypointAndMove(this.boy.wayPoints[0]);
         this.boy.canMove = false;
-        this.girl.setWaypointAndMove(this.girl.wayPoints[0]);
+        this.boy.setWaypointAndMove(this.boy.wayPoints[0]);
         this.girl.canMove = false;
+        this.girl.setWaypointAndMove(this.girl.wayPoints[0]);
 
         const score = {
             'Place': this.getPlaceScore(this.boy.wayPoints[0], this.girl.wayPoints[0]) * 1,
